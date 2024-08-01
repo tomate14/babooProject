@@ -1,0 +1,47 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{title}}</h4>
+      <button type="button" class="close" aria-label="Close" (click)="cerrar()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+</div>
+<div class="modal-body">
+    <div class="row">
+      <div class="col">
+        <div class="table-wrapper">
+          <table class="table table-striped" [ngClass]="{'scroll-x': pedidos.length > 10}">
+              <thead>
+              <tr>
+                  <th>DNI Cliente</th>
+                  <th>Fecha Pedido</th>
+                  <th>Total</th>
+                  <th>Tipo Pedido</th>
+                  <th>Estado</th>
+                  <th>Descripción</th>
+                  <th>Pagos</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let pedido of pedidos | paginate: { itemsPerPage: 10, currentPage: p }">
+                  <td>{{ pedido.dniCliente }}</td>
+                  <td>{{ pedido.fechaPedido | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ pedido.total | currency: 'ARS' : 'symbol-narrow' : '0.0-0' : 'es-AR'}}</td>
+                  <td>{{ pedido.tipoPedido === 1 ? 'PEDIDO' : 'CUENTA CORRIENTE'}}</td>
+                  <td>
+                    <i *ngIf="pedido.estado === 'COMPLETO'" class="fa fa-check" title="Completo"></i>
+                    <i *ngIf="pedido.estado === 'PENDIENTE'" class="fa fa-times" title="Pendiente"></i>
+                    <i *ngIf="pedido.estadoEnvio === 1" class="fa fa-truck no-enviado" aria-hidden="true" title="No enviado"> </i>
+                    <i *ngIf="pedido.estadoEnvio === 2" class="fa fa-truck en-produccion" aria-hidden="true" title="En produccion"> </i>
+                    <i *ngIf="pedido.estadoEnvio === 3" class="fa fa-truck enviado" aria-hidden="true" title="Enviado"> </i>
+                    <i *ngIf="pedido.estadoEnvio === 4" class="fa fa-truck terminado" aria-hidden="true" title="Terminado"> </i>
+                  </td>
+                  <td>{{ pedido.descripcion }}</td>
+                  <td><button class="btn btn-dark" (click)="verPagos(pedido)"><i class="fas fa-search"></i></button></td>
+              </tr>
+              </tbody>
+          </table>
+        </div>
+        <pagination-controls (pageChange)="p = $event"></pagination-controls>
+      </div>
+    </div>
+</div>
+  

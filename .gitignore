@@ -1,0 +1,9 @@
+# Ignorar archivos de configuración de IntelliJ IDEA
+.idea/
+
+# Ignorar archivos de configuración de Visual Studio Code
+.vscode/
+# Ignorar archivos y carpetas de configuración de Angular y Node.js en el directorio frontend
+frontend/.angular/
+frontend/.idea/
+frontend/node_modules/

@@ -1,0 +1,26 @@
+.mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--filled.mdc-text-field--no-label {
+    height: 37px;
+}
+
+.mdc-text-field--no-label .mat-mdc-form-field-infix {
+    padding-top: 5px;
+}
+
+.red-text {
+    color: red;
+}
+  
+.green-text {
+    color: green;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #333;
+    background-image: linear-gradient(to right, #ccc, #333, #ccc);
+}
+
+.margen-boton {
+    margin-left: 3px;
+}

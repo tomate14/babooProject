@@ -1,0 +1,132 @@
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-11">
+      <button class="btn btn-dark" (click)="isCollapsed = !isCollapsed">{{isCollapsed ? 'Mostrar filtros' : 'Ocultar filtros'}}</button>
+    </div>
+    <div class="col-1">
+      <button class="btn btn-dark" (click)="crearPedido()">Crear</button>
+    </div>    
+  </div>
+
+  <div *ngIf="!isCollapsed">
+    <form [formGroup]="filterForm" class="container filter-form">
+      <div class="row">
+        <div class="col-4 form-group">
+          <div class="form-group">
+            <label for="dniCliente">DNI:</label>
+            <input type="text" id="dniCliente" formControlName="dniCliente" class="form-control" name="dniCliente" aria-describedby="dniClienteHelp" placeholder="DNI"/>
+          </div>
+        </div>
+        <div class="col-4 form-group">
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" formControlName="nombre" class="form-control" name="nombre" aria-describedby="nombreHelp" placeholder="Nombre"/>
+        </div>
+        <div class="col-4 form-group">
+          <label for="idPedido">ID Pedido:</label>
+          <input type="text" id="idPedido" formControlName="idPedido" class="form-control" name="idPedido" aria-describedby="idPedidoHelp" placeholder="ID Pedido"/>
+        </div>               
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-3">
+          <div class="form-group">
+            <label for="fechaHasta">Fecha Desde</label>
+            <div class="input-group">
+                <span class="input-group-text">Desde</span>
+                <input type="date" class="form-control" placeholder="Desde" aria-label="Desde" formControlName="fechaDesde">
+            </div>  
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group">
+            <label for="fechaHasta">Fecha Hasta</label>
+            <div class="input-group">
+                <span class="input-group-text">Hasta </span>
+                <input id="fechaHasta" type="date" class="form-control" placeholder="Hasta" aria-label="Hasta" formControlName="fechaHasta">
+            </div>
+          </div>
+        </div> 
+        <div class="col-3">
+          <div class="form-group">
+            <label for="estadoDeEnvio">Estado Envio</label>
+            <select id="estadoDeEnvio" class="form-select" formControlName="estadoDeEnvio">
+              <option *ngFor="let fEnvio of estadoDeEnvio" [value]="fEnvio.value">{{fEnvio.viewValue}}</option>
+            </select>
+          </div>
+        </div> 
+        <div class="col-3">
+          <div class="form-group">
+            <label for="ordenFecha">Orden</label>
+            <select id="ordenFecha" class="form-select" formControlName="ordenFecha">
+              <option [value]="1">Ascendente</option>
+              <option [value]="2">Descendente</option>
+            </select>
+          </div>
+        </div>      
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-1">
+          <button class="btn btn-dark" (click)="buscar()">Buscar</button>
+        </div>
+        <div class="col-1">
+          <button class="btn btn-dark" (click)="limpiar()">Limpiar</button>
+        </div>
+      </div>  
+      <hr/>
+      <div class="row">
+        <div class="col-4 form-group">
+          <div class="form-group">
+            <label for="dias">Dias que pasaron pendiente de pago:</label>
+            <input type="number" id="dias" formControlName="dias" class="form-control" name="dias" aria-describedby="diaseHelp" placeholder="Dias"/>
+          </div>
+        </div>
+        <div class="col-2 form-group">
+          <button class="btn btn-danger margin-buscar" (click)="filtrarDeudores()">Buscar</button>
+        </div>
+      </div>
+          
+    </form>
+  </div>
+</div>
+<hr/>
+<div class="row">
+  <div class="col">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID Pedido</th>
+          <th>DNI</th>
+          <th>Fecha Pedido</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let pedido of pedidos| paginate: { itemsPerPage: 15, currentPage: p }">
+          <td>{{ pedido.numeroComprobante }}</td>
+          <td>{{ pedido.dniCliente }}</td>
+          <td>{{ pedido.fechaPedido | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ pedido.nombreCliente }}</td>
+          <td>
+            <i *ngIf="pedido.estado === 'COMPLETO'" class="fa fa-check" title="Completo"> </i>
+            <i *ngIf="pedido.estado === 'PENDIENTE'" class="fa fa-times" title="Pendiente"> </i>
+            <i *ngIf="pedido.estadoEnvio === 1" class="fa fa-truck no-enviado" aria-hidden="true" title="No enviado"> </i>
+            <i *ngIf="pedido.estadoEnvio === 2" class="fa fa-truck en-produccion" aria-hidden="true" title="En produccion"> </i>
+            <i *ngIf="pedido.estadoEnvio === 3" class="fa fa-truck enviado" aria-hidden="true" title="Enviado"> </i>
+            <i *ngIf="pedido.estadoEnvio === 4" class="fa fa-truck terminado" aria-hidden="true" title="Terminado"> </i>
+          </td>
+          <td>
+            <button class="btn btn-dark" (click)="verPagos(pedido)"><i class="fas fa-search" title="Ver pagos"></i></button>
+            <button class="btn btn-dark btnEditar" (click)="editarPedido(pedido)"><i class="fas fa-edit" title="Editar"></i></button>
+            <button *ngIf="pedido.estado === 'PENDIENTE'" class="btn btn-danger btnEditar" (click)="notificarDeuda(pedido)"><i class="fa fa-exclamation-triangle" title="Notificar Deuda"></i></button>
+            <button class="btn btn-warning btnEditar" (click)="enviarConfirmacion(pedido)"><i class="fa fa-paper-plane" title="Enviar Confirmacion"></i></button>
+            
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <pagination-controls (pageChange)="p = $event"></pagination-controls>
+  </div>
+</div>

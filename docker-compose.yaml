@@ -1,0 +1,55 @@
+version: '4.1'
+
+services:
+  baboo-mysql:
+    image: mysql:8.0
+    container_name: baboo_mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: baboo
+      MYSQL_USER: babooProject
+      MYSQL_PASSWORD: tubocaloca
+    ports:
+      - "3306:3306"
+    volumes:
+      - C:\baboo\mysql:/var/lib/mysql
+    networks:
+      - mynet
+
+  baboo-java:
+    build:
+      context: C:\Users\Maxi\Desktop\babooProject\babooBackend
+      dockerfile: Dockerfile
+    container_name: baboo_java_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - baboo-mysql
+    networks:
+      - mynet  
+  baboo-angular:
+    build:
+      context: C:\Users\Maxi\Desktop\babooProject\frontend
+      dockerfile: Dockerfile
+    container_name: baboo_angular_app
+    ports:
+      - "4200:4200"
+    depends_on:
+     - baboo-java
+    networks:
+      - mynet
+  #backup:
+  #  build:
+  #    context: C:\Users\Maxi\Desktop\casalinda\buckup
+  #    dockerfile: Dockerfile
+  #  container_name: backup_mongodb
+  #  volumes:
+  #    - C:\casalinda\buckup\data:/backup
+  #  depends_on:
+  #    - mongodb
+  #  networks:
+  #    - mynet
+
+networks:
+      mynet:
+  

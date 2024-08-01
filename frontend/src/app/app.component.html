@@ -1,0 +1,19 @@
+<div class="container-fluid">
+  <div class="row flex-nowrap">
+      <div class="col-md-2 px-0">
+          <div id="sidebar" class="collapse collapse-horizontal show border-end">
+              <ul id="sidebar-nav" class="list-group min-vh-100">
+                <li class="list-group-item" (click)="cambiarComponente('caja')">Caja</li>
+                <li class="list-group-item" (click)="cambiarComponente('clientes')">Clientes</li>
+                <li class="list-group-item" (click)="cambiarComponente('cuentaCorriente')">Cuenta Corriente</li>
+                <li class="list-group-item" (click)="cambiarComponente('pedidos')">Pedidos</li>
+                <li class="list-group-item" (click)="cambiarComponente('estadisticas')">Resumen Cuentas</li>
+                <li class="list-group-item cierre-caja" (click)="cerrarCaja()">Cerrar Caja</li>
+              </ul>
+          </div>
+      </div>
+      <main class="col-md-10 ps-md-2 pt-2">
+        <router-outlet></router-outlet>
+      </main>
+  </div>
+</div>
