@@ -19,6 +19,7 @@ public class Cliente {
     private String cuit;
     private String fechaAlta;
     private int tipoUsuario;
+    private Integer porcentajeRemarcar;
 
     @Transient
     private boolean esDeudor = false;
