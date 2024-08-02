@@ -22,16 +22,18 @@ export class CrearClienteComponent {
   }
 
   ngOnInit() {
-    this.myForm = this.fb.group({
-      nombre: [this.cliente ? this.cliente.nombre : null, Validators.required],
+    const validator = {
       dni: [this.cliente ? this.cliente.dni : null, Validators.required],
-      fechaNacimiento: [this.cliente ? this.cliente.fechaNacimiento : null],
+      tipoUsuario: [this.cliente ? this.cliente.tipoUsuario : null, Validators.required],
+      nombre: [this.cliente ? this.cliente.nombre : null, Validators.required],
+      email: [this.cliente ? this.cliente.email : null, [Validators.required, Validators.email]],
       direccion: [this.cliente ? this.cliente.direccion : null, Validators.required],
       telefono: [this.cliente ? this.cliente.telefono : null, Validators.required],
-      email: [this.cliente ? this.cliente.email : null, [Validators.required, Validators.email]],
       cuit: [this.cliente ? this.cliente.cuit : null],
-      tipoUsuario: [this.cliente ? this.cliente.tipoUsuario : null, Validators.required]
-    });
+      fechaNacimiento: [this.cliente ? this.cliente.fechaNacimiento : null]
+    }
+
+    this.myForm = this.fb.group(validator);
   }
   cerrar() {
     this.myForm.reset();

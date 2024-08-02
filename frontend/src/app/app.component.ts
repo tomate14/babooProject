@@ -26,6 +26,10 @@ export class AppComponent {
       this.router.navigate([`/${componente}`, 1]);
     }else if (componente === 'proveedores') {
       this.router.navigate([`/${componente}`, 2]);
+    }else if (componente === 'ordencompra') {
+      this.router.navigate([`/${componente}`, 'ORC']);
+    }else if (componente === 'ordenventa') {
+      this.router.navigate([`/${componente}`, 'ORV']);
     } else {
       this.router.navigate([`/${componente}`]);
     }

@@ -15,4 +15,5 @@ public interface ClienteRepository extends JpaRepository<Cliente, Integer> {
     Optional<Cliente> findByDni(Integer dni);
     @Query("SELECT c FROM Cliente c WHERE c.nombre LIKE %:regex%")
     List<Cliente> findByNombreContaining(@Param("regex") String regex);
+    List<Cliente> findByTipoUsuario(int i);
 }
