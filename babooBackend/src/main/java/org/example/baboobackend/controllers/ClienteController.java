@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 //ESTA OK
 @RestController
@@ -25,8 +26,8 @@ public class ClienteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> getAllClientes() { //OK
-        List<Cliente> clientes = clienteService.getAllClientes();
+    public ResponseEntity<List<Cliente>> getAllClientes(@RequestParam Map<String, String> queryParams) { //OK
+        List<Cliente> clientes = clienteService.getAllClientes(queryParams);
         return ResponseEntity.ok(clientes);
     }
 

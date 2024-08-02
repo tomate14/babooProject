@@ -1,5 +1,11 @@
 package org.example.baboobackend.service.impl;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.baboobackend.daos.ClienteRepository;
@@ -13,16 +19,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 public class ClienteServiceImpl implements ClienteService {
 
     private static final Logger logger = LogManager.getLogger(ClienteServiceImpl.class);
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
     private ClienteRepository clientRepository;
+
     @Autowired
     private PedidoRepository pedidoRepository;
 
@@ -32,8 +42,26 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public List<Cliente> getAllClientes() {
-        List<Cliente> clients = clientRepository.findAll();
+    public List<Cliente> getAllClientes(Map<String, String> queryParams) {
+        Map<String, Object> filtros = new HashMap<>();
+
+        if (queryParams.containsKey("dni")) {
+            try {
+                filtros.put("dni", queryParams.get("dni"));
+            } catch (Exception e) {
+                throw new IllegalArgumentException("ID no válido");
+            }
+        }
+
+        if (queryParams.containsKey("tipoUsuario")) {
+            filtros.put("tipoUsuario", Integer.parseInt(queryParams.get("tipoUsuario")));
+        }
+        if (queryParams.containsKey("nombre")) {
+            filtros.put("nombre",queryParams.get("nombre"));
+        }
+
+        List<Cliente> clients = findByCriteria(filtros);
+
         List<Pedido> pedidos = pedidoRepository.findPedidoByEstadoIs(Estado.PENDIENTE.getDescripcion());
         if (!CollectionUtils.isEmpty(pedidos)) {
             List<Integer> dniDeudores = pedidos.stream().map(Pedido::getDniCliente).distinct().toList();
@@ -105,6 +133,28 @@ public class ClienteServiceImpl implements ClienteService {
         } else {
             throw new IllegalArgumentException("El cliente no existe");
         }
+    }
+
+    private List<Cliente> findByCriteria(Map<String, Object> filtros) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Cliente> cq = cb.createQuery(Cliente.class);
+        Root<Cliente> cliente = cq.from(Cliente.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        for (Map.Entry<String, Object> entry : filtros.entrySet()) {
+            if ("nombre".equals(entry.getKey())) {
+                predicates.add(cb.like(cb.lower(cliente.get("nombre")), "%" + entry.getValue().toString().toLowerCase() + "%"));
+            } else if ("tipoUsuario".equals(entry.getKey())) {
+                predicates.add(cb.equal(cliente.get(entry.getKey()), entry.getValue()));
+            } else if ("dni".equals(entry.getKey())) {
+                predicates.add(cb.equal(cliente.get(entry.getKey()), entry.getValue()));
+            }
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+
+        return entityManager.createQuery(cq).getResultList();
     }
 
 }

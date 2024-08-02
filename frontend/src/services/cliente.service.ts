@@ -19,10 +19,10 @@ export class ClienteService {
     return this.httpClient.post<Cliente>("http://127.0.0.1:8080/cliente",cliente);    
   }
 
-  public updateCliente(idCliente: string, cliente:Cliente): Observable<Cliente> {
-    return this.httpClient.put<Cliente>(`http://127.0.0.1:8080/cliente/${idCliente}`,cliente);    
+  public updateCliente(cliente:Cliente): Observable<Cliente> {
+    return this.httpClient.put<Cliente>(`http://127.0.0.1:8080/cliente`,cliente);    
   }
   public getClientes(tipoUsuario:number): Observable<Cliente[]> {
-    return this.httpClient.get<Cliente[]>(`http://127.0.0.1:5000/cliente?tipoUsuario=${tipoUsuario}`);
+    return this.httpClient.get<Cliente[]>(`http://127.0.0.1:8080/cliente?tipoUsuario=${tipoUsuario}`);
   }
 }
