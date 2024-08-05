@@ -1,5 +1,6 @@
 package org.example.baboobackend.service;
 
+import org.example.baboobackend.comprobante.Comprobante;
 import org.example.baboobackend.entities.Producto;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.Optional;
 public interface ProductoService {
     List<Producto> getAllProductos(Map<String, String> queryParams);
     Optional<Producto> getProductoById(Integer id);
-    Producto createProducto(Producto producto);
+    List<Producto> createProductos(Comprobante comprobante, List<Producto> productos);
     Optional<Producto> updateProducto(Producto producto);
     void deleteProducto(Integer id);
 }

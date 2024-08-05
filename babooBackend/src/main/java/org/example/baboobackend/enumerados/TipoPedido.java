@@ -2,7 +2,9 @@ package org.example.baboobackend.enumerados;
 
 public enum TipoPedido {
     PEDIDO(1, "PEDIDO"),
-    CC(2, "CUENTA CORRIENTE");
+    CC(2, "CUENTA CORRIENTE"),
+    ORC(3, "ORDEN DE COMPRA"),
+    ORV(4, "ORDEN DE VENTA");
 
     private final int codigo;
     private final String descripcion;

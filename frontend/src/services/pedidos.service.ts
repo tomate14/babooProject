@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Pedido } from '../clases/dominio/pedido';
 import { DeudaPedido } from '../clases/dto/deudaPedido';
+import { Producto } from '../clases/dominio/producto';
 //import { saveAs } from 'file-saver';
 
 @Injectable({
@@ -30,6 +31,16 @@ export class PedidosService {
 
   public post(pedido:Pedido): Observable<Pedido> {
     return this.httpClient.post<Pedido>("http://127.0.0.1:8080/pedido",pedido);
+  }
+
+  public crearPedido(productos:Producto[], tipoComprobante:string, formaPago:number, total:number): Observable<Pedido> {
+    const pedidoDto = {
+      productos,
+      tipoComprobante,
+      formaPago,
+      total
+    }
+    return this.httpClient.post<Pedido>("http://127.0.0.1:8080/pedido/crear",pedidoDto);
   }
 
   public put(idPedido:string, pedido:Pedido): Observable<Pedido> {

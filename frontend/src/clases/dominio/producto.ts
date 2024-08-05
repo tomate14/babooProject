@@ -2,7 +2,7 @@ export interface Producto {
     id?:number;
     nombre: string;
     codigoBarra: string;
-    precioVenta:number;
+    precioVenta?:number;
     precioCompra:number;
     idProveedor:number;
     stock:number;

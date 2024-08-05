@@ -1,7 +1,10 @@
 package org.example.baboobackend.controllers;
 
+import jakarta.websocket.server.PathParam;
+import org.example.baboobackend.dto.CrearPedidoDTO;
 import org.example.baboobackend.dto.PedidoDeudaDTO;
 import org.example.baboobackend.entities.Pedido;
+import org.example.baboobackend.entities.Producto;
 import org.example.baboobackend.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,12 @@ public class PedidoController {
     @PostMapping
     public ResponseEntity<?> crearPedido(@RequestBody Pedido nuevoPedido) { //OK
         Pedido pedidoCreado = pedidoService.crearPedido(nuevoPedido);
+        return ResponseEntity.ok(pedidoCreado);
+    }
+
+    @PostMapping("/crear")
+    public ResponseEntity<?> crearPedido(@RequestBody CrearPedidoDTO crearDto) { //OK
+        Pedido pedidoCreado = pedidoService.generarPedido(crearDto);
         return ResponseEntity.ok(pedidoCreado);
     }
 

@@ -7,6 +7,9 @@ import { Producto } from '../clases/dominio/producto';
   providedIn: 'root'
 })
 export class ProductoService {
+  saveAll(productos: Producto[]) {
+    return this.httpClient.post<Producto[]>("http://127.0.0.1:8080/producto",productos);
+  }
 
   constructor(private httpClient: HttpClient) { }
 

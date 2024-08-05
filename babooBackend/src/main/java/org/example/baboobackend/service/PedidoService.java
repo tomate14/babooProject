@@ -1,8 +1,10 @@
 package org.example.baboobackend.service;
 
 
+import org.example.baboobackend.dto.CrearPedidoDTO;
 import org.example.baboobackend.dto.PedidoDeudaDTO;
 import org.example.baboobackend.entities.Pedido;
+import org.example.baboobackend.entities.Producto;
 
 import java.util.List;
 import java.util.Map;
@@ -15,5 +17,7 @@ public interface PedidoService {
     List<Pedido> getPedidosVencidos(String fechaDesde, int tipoPedido);
     PedidoDeudaDTO getDeudaPedido(int idPedido);
     List<Pedido> getPedidosFiltrados(Map<String, String> queryParams);
+
+    Pedido generarPedido(CrearPedidoDTO crearDto);
 }
 

@@ -3,12 +3,15 @@ package org.example.baboobackend.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Data
 public class Producto {
 
     public static final String ID = "id";
     public static final String NOMBRE = "nombre";
+    public static final String ID_PROVEEDOR = "idProveedor";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -37,5 +40,20 @@ public class Producto {
     @OneToOne
     @JoinColumn(name = "id_proveedor", referencedColumnName = "dni", insertable = false, updatable = false)
     private Cliente proveedor;
+
+
+    public int calcularPrecioConAumento(Cliente proveedor) {
+        double porcentajeAumento = proveedor.getPorcentajeRemarcar();
+        double aumento = precioCompra * (porcentajeAumento / 100);
+        return (int) Math.ceil(precioCompra + aumento);
+    }
+
+    public static int calcularTotal(List<Producto> productos) {
+        int total = 0;
+        for (Producto producto : productos) {
+            total += producto.getPrecioCompra() * producto.getStock();
+        }
+        return total;
+    }
 
 }

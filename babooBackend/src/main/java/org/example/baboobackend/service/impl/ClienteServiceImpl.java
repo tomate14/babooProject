@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 @Service
 public class ClienteServiceImpl implements ClienteService {
@@ -35,6 +34,8 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Autowired
     private PedidoRepository pedidoRepository;
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     @Override
     public Optional<Cliente> getClient(Integer dni) {
@@ -133,6 +134,27 @@ public class ClienteServiceImpl implements ClienteService {
         } else {
             throw new IllegalArgumentException("El cliente no existe");
         }
+    }
+
+    @Override
+    public Optional<Cliente> findByDni(int dniCliente) {
+
+        Optional<Cliente> cliente = clienteRepository.findByDni(dniCliente);
+        if (cliente.isPresent()) {
+            return cliente;
+        } else {
+            throw new IllegalArgumentException("El cliente no existe");
+        }
+    }
+
+    @Override
+    public List<Cliente> findAll() {
+        return clienteRepository.findAll();
+    }
+
+    @Override
+    public List<Cliente> findByNombreContaining(String regex) {
+        return clienteRepository.findByNombreContaining(regex);
     }
 
     private List<Cliente> findByCriteria(Map<String, Object> filtros) {
