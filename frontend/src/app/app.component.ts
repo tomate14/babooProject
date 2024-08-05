@@ -5,17 +5,21 @@ import { Router } from '@angular/router';
 import { horaPrincipioFinDia, nowConLuxonATimezoneArgentina } from '../utils/dates';
 import { CajaService } from '../services/caja.service';
 import { ConfirmarService } from '../services/popup/confirmar';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ReactiveFormsModule],
+  imports: [RouterOutlet, ReactiveFormsModule, NgIf],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA] 
 })
 export class AppComponent {
+
   title = 'generarPedido';
+  isUsuariosCollapsed = true;
+  isComprobanteCollapsed = true;
   constructor(private router: Router, private cajaService:CajaService, private confirmarService:ConfirmarService) {}
   cambiarComponente(componente: string) {
     if (componente === 'pedidos') {
@@ -55,5 +59,12 @@ export class AppComponent {
         })
       }
     })    
+  }
+  toggleCollapse(item: string) {
+    if (item === 'usuario') {
+      this.isUsuariosCollapsed = !this.isUsuariosCollapsed;
+    } else if (item === 'comprobante') {
+      this.isComprobanteCollapsed = !this.isComprobanteCollapsed;
+    }
   }
 }
