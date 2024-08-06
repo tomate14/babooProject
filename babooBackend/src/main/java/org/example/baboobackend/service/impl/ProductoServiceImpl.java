@@ -76,18 +76,9 @@ public class ProductoServiceImpl implements ProductoService {
         productos.forEach(newProd -> {
             if (newProd.getId() != null) {
                 Optional<Producto> optExistente = productoRepository.findById(newProd.getId());
-                if (optExistente.isPresent()) {
-                    final Producto prodExistente = optExistente.get();
-                    int nuevoStock = comprobante.calcularStock(prodExistente.getStock(), newProd.getStock());
-                    newProd.setStock(nuevoStock);
-
-                    final int precioCompraMayor = Math.max(prodExistente.getPrecioCompra(), newProd.getPrecioCompra());;
-                    newProd.setPrecioCompra(precioCompraMayor);
-
-                    newProd.setPrecioVenta(newProd.calcularPrecioConAumento(prodExistente.getProveedor()));
-
-                }
+                comprobante.buildForSave(optExistente, newProd);
             } else {
+                //New Product. Controlar antes de enviar en las ordenes de venta ids != null
                 Optional<Cliente> proveedor = clienteRepository.findByDni(newProd.getIdProveedor());
                 proveedor.ifPresent(cliente -> newProd.setPrecioVenta(newProd.calcularPrecioConAumento(cliente)));
             }

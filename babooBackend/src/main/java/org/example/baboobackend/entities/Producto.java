@@ -12,6 +12,7 @@ public class Producto {
     public static final String ID = "id";
     public static final String NOMBRE = "nombre";
     public static final String ID_PROVEEDOR = "idProveedor";
+    public static final String STOCK = "stock";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

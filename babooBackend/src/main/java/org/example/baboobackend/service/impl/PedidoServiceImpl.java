@@ -291,24 +291,25 @@ public class PedidoServiceImpl implements PedidoService {
             List<Producto> originales = crearDto.getProductos().stream().filter(p-> p.getId() != null).toList();
 
             // Crear los HashMap para almacenar id-precioCompra y id-stock
-            HashMap<Integer, Integer> idPrecioCompraMap = new HashMap<>();
+            HashMap<Integer, Integer> idPrecioMap = new HashMap<>();
             HashMap<Integer, Integer> idStockMap = new HashMap<>();
 
             // Rellenar los HashMap con los valores correspondientes
             for (Producto producto : originales) {
-                idPrecioCompraMap.put(producto.getId(), producto.getPrecioCompra());
+                idPrecioMap.put(producto.getId(), comprobante.getPrecio(producto));
                 idStockMap.put(producto.getId(), producto.getStock());
             }
             //Guardo los productos
             List<Producto> productosGuardados = productoService.createProductos(comprobante, crearDto.getProductos());
+
             Optional<Cliente> proveedor = clienteService.findByDni(productosGuardados.get(0).getIdProveedor());
-            if (proveedor.isEmpty()) {
+            if ((tipo.getCodigo() != TipoPedido.ORV.getCodigo()) && proveedor.isEmpty()) { //No necesario en las ORV
                 throw new IllegalArgumentException("No existe el proveedor");
             }
             Pedido pedido = new Pedido();
             pedido.setTipoPedido(tipo.getCodigo());
             pedido.setEstado(Estado.COMPLETO.getDescripcion());
-            pedido.setConSena(false);
+            pedido.setConSena(true);
             pedido.setFechaPedido(fecha);
             pedido.setTotal(comprobante.calcularTotal(crearDto.getTotal()));
             pedido.setEstadoEnvio(EstadoPedido.ENVIADO.getCodigo());
@@ -316,7 +317,7 @@ public class PedidoServiceImpl implements PedidoService {
 
             Numeracion numerador = generarNumeroComprobante(pedido);
             pedido.setNumeroComprobante(formatearNumero(numerador.getNumeroComprobante()));
-            pedido.setDescripcion("Pedido generado por "+TipoPedido.ORC.getDescripcion() + " numero "+pedido.getNumeroComprobante());
+            pedido.setDescripcion("Pedido generado por "+tipo.getDescripcion() + " numero "+pedido.getNumeroComprobante());
 
             //Actualizo el numero de comprobante
             numerador.setNumeroComprobante(numerador.getNumeroComprobante() + 1);
@@ -332,8 +333,8 @@ public class PedidoServiceImpl implements PedidoService {
                 comprobanteItem.setStock(producto.getStock());
                 comprobanteItem.setIdProducto(producto.getId());
                 Optional<Producto> existente = originales.stream().filter(producto1 -> Objects.equals(producto.getId(), producto1.getId())).findFirst();
-                comprobanteItem.setPrecioCompra(producto.getPrecioCompra());
-                existente.ifPresent(value -> comprobanteItem.setPrecioCompra(idPrecioCompraMap.get(existente.get().getId())));
+                comprobanteItem.setPrecio(producto.getPrecioCompra());
+                existente.ifPresent(value -> comprobanteItem.setPrecio(idPrecioMap.get(existente.get().getId())));
                 comprobanteItem.setStock(producto.getStock());
                 existente.ifPresent(value -> comprobanteItem.setStock(idStockMap.get(existente.get().getId())));
                 items.add(comprobanteItem);
@@ -346,7 +347,7 @@ public class PedidoServiceImpl implements PedidoService {
             pago.setIdPedido(pedido.getId());
             pago.setFormaPago(crearDto.getFormaPago());
             pago.setValor(pedido.getTotal());
-            pago.setDescripcion("Pago de "+TipoPedido.ORC.getDescripcion() + " numero "+pedido.getNumeroComprobante());
+            pago.setDescripcion("Pago de " + tipo.getDescripcion() + " numero " + pedido.getNumeroComprobante());
 
             //Guardo el pago del pedido
             pagoRepository.save(pago);

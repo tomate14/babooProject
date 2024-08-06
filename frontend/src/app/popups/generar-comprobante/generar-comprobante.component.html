@@ -8,9 +8,8 @@
           </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
-            <app-searchable-select
-                *ngIf="usuarios.length > 0"
+        <div class="col-md-6" *ngIf="usuarios.length > 0">
+            <app-searchable-select                
               [searchAttribute]="'nombre'"
               [originalValues]="usuarios"
               [key]="'dni'"
@@ -18,9 +17,8 @@
               (valueChange)="onProveedorSelect($event)">
             </app-searchable-select>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6" *ngIf="productosProveedor.length > 0">
             <app-searchable-select
-                *ngIf="productosProveedor.length > 0"
                 [searchAttribute]="'nombre'"
                 [originalValues]="productosProveedor"
                 [key]="'id'"
@@ -52,8 +50,8 @@
             </div>
             <div class="col-md-2 form-group">
                 <div class="form-group">
-                    <label for="precioCompra">Precio Compra</label>
-                    <input type="number" class="form-control" formControlName="precioCompra" id="precioCompra" aria-describedby="compraHelp" placeholder="Precio Compra" required>
+                    <label for="precio">Precio</label>
+                    <input type="number" class="form-control" formControlName="precio" id="precio" aria-describedby="compraHelp" placeholder="Precio" required>
                 </div>
             </div>
             <div class="col-md-1 form-group">
@@ -74,7 +72,7 @@
             <tr>
               <th>Nombre</th>
               <th>Codigo de barra</th>
-              <th>Precio Compra</th>
+              <th>Precio</th>
               <th>Stock</th>
               <th>Acciones</th>
             </tr>
@@ -83,7 +81,7 @@
             <tr *ngFor="let producto of productos">
               <td>{{ producto.nombre }}</td>
               <td>{{ producto.codigoBarra }}</td>
-              <td>{{ producto.precioCompra | currency: 'ARS' : 'symbol-narrow' : '0.0-0' : 'es-AR'}}</td>
+              <td>{{ getPrecioProducto(producto) | currency: 'ARS' : 'symbol-narrow' : '0.0-0' : 'es-AR'}}</td>
               <td>{{ producto.stock }}</td>
               <td>
                 <button class="btn btn-dark btnEditar" (click)="editarProducto(producto)">

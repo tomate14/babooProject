@@ -41,13 +41,18 @@ export class GenerarComprobanteComponent {
         this.clienteService.getClientes(this.tipoUsuario).subscribe(res => {
           this.usuarios = res;
         })
+      } else if (this.tipoComprobante === 'ORV') {
+        this.tipoUsuario = 0;
+        this.productoService.getByParams([]).subscribe(res => {
+          this.productosProveedor = res;
+        })
       }
     });
     this.myForm = this.fb.group({  
       id: null,    
       codigoBarra: null,      
       stock: [null, Validators.required],
-      precioCompra: [null, Validators.required],
+      precio: [null, Validators.required],
       nombre: [null, Validators.required]
     });
   }
@@ -67,43 +72,90 @@ export class GenerarComprobanteComponent {
       id: producto.id,
       nombre: producto.nombre,
       codigoBarra: producto.codigoBarra,
-      precioCompra: producto.precioCompra
+      precio: this.getPrecioProducto(producto)
     });
     //this.readonly = true;
   }
   onSubmit() {
     if (this.myForm.valid) {
-      const existente = this.productos.filter(prod => prod.id).find(prod => prod.id === this.myForm.value.id);
-      if (!existente) {
-        const producto:Producto = {
-          id: this.myForm.value.id,
-          nombre: this.myForm.value.nombre,
-          codigoBarra: this.myForm.value.codigoBarra,
-          precioCompra: this.myForm.value.precioCompra,
-          stock: this.myForm.value.stock,
-          idProveedor: this.proveedor ? this.proveedor.dni : 0
-        }
-        this.productos.push(producto);
-        this.myForm.reset();
-        //this.readonly = false;
-      } else {
-        this.confirmarService.confirm('Error', 'No se puede agregar', true, 'Aceptar', 'Cancelar');
+      try {
+        const existente = this.productos.filter(prod => prod.id).find(prod => prod.id === this.myForm.value.id);
+        if (!existente) {
+          const producto:Producto = {
+            id: this.myForm.value.id,
+            nombre: this.myForm.value.nombre,
+            codigoBarra: this.myForm.value.codigoBarra,
+            stock: this.myForm.value.stock,
+            idProveedor: this.proveedor ? this.proveedor.dni : 0
+          }
+          this.setPrecio(producto, this.myForm.value);
+          // Ordenes de ventas no habilitadas para dar de alta productos. Solo hacer por ORDEN DE COMPRA
+          // para agregar el stock correspondiente.
+          if (this.tipoComprobante === 'ORV' && !producto.id) {
+            this.confirmarService.confirm('Error', 'Para agregar un producto nuevo hacerlo desde la Orden de Compra', true, 'Aceptar', 'Cancelar')
+            .then((res)=> {
+              this.myForm.reset();
+            });
+          } else {
+            if (!this.productoExiste(producto.id) && this.stockValido(producto)) {
+              this.productos.push(producto);
+              this.myForm.reset();
+            }
+          }
+          //this.readonly = false;
+        } else {
+          this.confirmarService.confirm('Error', 'No se puede agregar. Edite el existente', true, 'Aceptar', 'Cancelar');
+        }  
+      } catch (error:any) {
+        this.confirmarService.confirm('Error', error.message, true, 'Aceptar', 'Cancelar').then((res) => {
+          this.myForm.reset();
+        });
       }
+      
     }
   }
 
   guardarProductos() {
     const total = this.calcularTotal();
-    this.pedidoService.crearPedido(this.productos, 'ORC', this.selectedFormaDePago, total).subscribe((res:any)=> {
-      console.log(res);
-      this.productos = [];
-      this.productosProveedor = [];
-      //this.readonly = false;
-    }, (error) => {
-      this.confirmarService.confirm('Error', error.message, true, 'Aceptar', 'Cancelar');
-    })
+    const tipoComprobante = this.tipoComprobante ||"";
+    try {
+      if (this.checkeoExitoso()) {
+        this.pedidoService.crearPedido(this.productos, tipoComprobante, this.selectedFormaDePago, total).subscribe((res:any)=> {
+          console.log(res);
+          this.productos = [];
+          this.productosProveedor = [];
+          //this.readonly = false;
+        }, (error) => {
+          this.confirmarService.confirm('Error', error.message, true, 'Aceptar', 'Cancelar');
+        })
+      }
+    } catch (error) {
+      this.confirmarService.confirm('Error', JSON.stringify(error), true, 'Aceptar', 'Cancelar');
+    }
+    
   }
 
+  private checkeoExitoso() {
+    return this.productos.length > 0 && this.selectedFormaDePago > 0 && this.tipoComprobante;
+  }
+
+  private productoExiste(id:any) {
+    if (id === null) {
+      return false; // Si el ID es null, no hacemos la validación
+    }
+    return this.productos.some(producto => producto.id === id);
+  }
+
+  private stockValido(productoNuevo:Producto) {
+    if (this.tipoComprobante === 'ORV') {
+      const productoExistente = this.productosProveedor.find((p) => p.id == productoNuevo.id);
+      const value = productoExistente && productoExistente.stock - productoNuevo.stock >= 0;
+      if (!value) {
+        throw new Error('Stock no valido para el producto '+ productoNuevo.nombre+". Cantidad disponible "+productoExistente?.stock);
+      }
+    }
+    return productoNuevo.stock > 0;
+  }
   onFormaDePagoChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedFormaDePago = +target.value;
@@ -111,10 +163,35 @@ export class GenerarComprobanteComponent {
   }
 
   calcularTotal() {
-    return this.productos.reduce((accum, producto) => accum + (producto.precioCompra * producto.stock), 0);
+    if (this.tipoComprobante === 'ORC') {
+      return this.productos.reduce((accum, producto) => accum + (producto.precioCompra|| 0 * producto.stock), 0);
+    } else if (this.tipoComprobante === 'ORV') {
+      return this.productos.reduce((accum, producto) => accum + ((producto.precioVenta|| 0) * producto.stock), 0);
+    } else {
+      return 0;
+    }
+    
+  }
+
+  getPrecioProducto(producto: Producto): any {
+    if (this.tipoComprobante === 'ORC') {
+      return producto.precioCompra;
+    } else if (this.tipoComprobante === 'ORV') {
+      return producto.precioVenta;
+    }
+  }
+
+  setPrecio(producto: Producto, value: any) {
+    if (this.tipoComprobante === 'ORC') {
+      producto.precioCompra = +value.precio;
+    } else if (this.tipoComprobante === 'ORV') {
+      producto.precioVenta = +value.precio;
+    }
   }
   editarProducto(_t58: Producto) {
     throw new Error('Method not implemented.');
   }
-
 }
+
+
+

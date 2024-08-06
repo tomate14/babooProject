@@ -3,7 +3,7 @@ export interface Producto {
     nombre: string;
     codigoBarra: string;
     precioVenta?:number;
-    precioCompra:number;
+    precioCompra?:number;
     idProveedor:number;
     stock:number;
     nombreProveedor?:string;

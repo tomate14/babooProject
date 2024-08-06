@@ -3,6 +3,10 @@ package org.example.baboobackend.comprobante;
 import org.example.baboobackend.comprobante.calculador.Calculador;
 import org.example.baboobackend.comprobante.calculador.Resta;
 import org.example.baboobackend.comprobante.calculador.Suma;
+import org.example.baboobackend.entities.Cliente;
+import org.example.baboobackend.entities.Producto;
+
+import java.util.Optional;
 
 public class OrdenDeVenta extends Comprobante {
 
@@ -20,4 +24,22 @@ public class OrdenDeVenta extends Comprobante {
     public int calcularTotal(int total) {
         return calcTotal.calcular(total, 0);
     }
+
+    @Override
+    public int getPrecio(Producto producto) {
+        return producto.getPrecioVenta();
+    }
+
+    @Override
+    public void buildForSave(Optional<Producto> optExistente, Producto newProd) {
+        if (optExistente.isPresent()) {
+            final Producto prodExistente = optExistente.get();
+            int nuevoStock = this.calcularStock(prodExistente.getStock(), newProd.getStock());
+            newProd.setIdProveedor(prodExistente.getIdProveedor());
+            newProd.setStock(nuevoStock);
+            newProd.setPrecioCompra(prodExistente.getPrecioCompra());
+            newProd.setPrecioVenta(prodExistente.getPrecioVenta());
+        }
+    }
+
 }

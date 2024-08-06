@@ -13,5 +13,5 @@ public class ComprobanteItem {
     private int idPedido;
     private int idProducto;
     private int stock;
-    private int precioCompra;
+    private int precio;
 }
