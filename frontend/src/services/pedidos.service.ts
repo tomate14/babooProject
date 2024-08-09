@@ -33,12 +33,13 @@ export class PedidosService {
     return this.httpClient.post<Pedido>("http://127.0.0.1:8080/pedido",pedido);
   }
 
-  public crearPedido(productos:Producto[], tipoComprobante:string, formaPago:number, total:number): Observable<Pedido> {
+  public crearPedido(productos:Producto[], tipoComprobante:string, formaPago:number, total:number, dni?:number): Observable<Pedido> {
     const pedidoDto = {
       productos,
       tipoComprobante,
       formaPago,
-      total
+      total,
+      dni
     }
     return this.httpClient.post<Pedido>("http://127.0.0.1:8080/pedido/crear",pedidoDto);
   }

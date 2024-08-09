@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SearchableSelectComponent } from "../../generales/searchable-select/searchable-select.component";
 import { ClienteService } from '../../../services/cliente.service';
@@ -10,6 +10,9 @@ import { ProductoService } from '../../../services/producto.service';
 import { ConfirmarService } from '../../../services/popup/confirmar';
 import { PedidosService } from '../../../services/pedidos.service';
 import { FormaDePago, formaDePago } from '../../../clases/constantes/formaPago';
+import { ConfirmarComprobanteService } from '../../../services/popup/confirmarComprobante.setvice';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { TipoPedido, tipoDePedido } from '../../../clases/constantes/cuentaCorriente';
 
 @Component({
   selector: 'app-generar-comprobante',
@@ -18,36 +21,30 @@ import { FormaDePago, formaDePago } from '../../../clases/constantes/formaPago';
   templateUrl: './generar-comprobante.component.html',
   styleUrl: './generar-comprobante.component.css'
 })
-export class GenerarComprobanteComponent {
+export class GenerarComprobanteComponent implements OnInit{
+  cerrar() {
+    this.activeModal.close(null);
+  }
   
-  tipoComprobante:string | undefined;
   tipoUsuario:number = 0;
   usuarios: Cliente[] = [];
   productosProveedor:Producto[] = [];
   productos:Producto[] = [];
   proveedor:Cliente | undefined;
   myForm: FormGroup;
+  myFormHeader: FormGroup;
   readonly:boolean = false;
   formaDePago:FormaDePago[] = [];
   selectedFormaDePago:number = 1;
+  tipoDePedido:TipoPedido[] = [];
+  @Input() title:string = "";
+  @Input() tipoComprobante:string = "";
   constructor(private route: ActivatedRoute, private clienteService: ClienteService, private fb: FormBuilder,
-    private productoService:ProductoService, private confirmarService:ConfirmarService, private pedidoService: PedidosService
+    private productoService:ProductoService, private confirmarService:ConfirmarService, private pedidoService: PedidosService,
+    private confirmarComprobanteService: ConfirmarComprobanteService, private activeModal: NgbActiveModal
   ) {
     this.formaDePago = formaDePago;
-    this.route.params.subscribe(params => {
-      this.tipoComprobante = params['tipo'];
-      if (this.tipoComprobante === 'ORC') {
-        this.tipoUsuario = 2;
-        this.clienteService.getClientes(this.tipoUsuario).subscribe(res => {
-          this.usuarios = res;
-        })
-      } else if (this.tipoComprobante === 'ORV') {
-        this.tipoUsuario = 0;
-        this.productoService.getByParams([]).subscribe(res => {
-          this.productosProveedor = res;
-        })
-      }
-    });
+    this.tipoDePedido = tipoDePedido;
     this.myForm = this.fb.group({  
       id: null,    
       codigoBarra: null,      
@@ -55,6 +52,23 @@ export class GenerarComprobanteComponent {
       precio: [null, Validators.required],
       nombre: [null, Validators.required]
     });
+    this.myFormHeader = this.fb.group({  
+      dni: null,    
+      formaDePago: 1
+    });
+  }
+  ngOnInit(): void {
+    if (this.tipoComprobante === 'ORC') {
+      this.tipoUsuario = 2;
+      this.clienteService.getClientes(this.tipoUsuario).subscribe(res => {
+        this.usuarios = res;
+      })
+    } else if (this.tipoComprobante === 'ORV') {
+      this.tipoUsuario = 0;
+      this.productoService.getByParams([]).subscribe(res => {
+        this.productosProveedor = res;
+      })
+    }
   }
   
   onProveedorSelect(cliente: Cliente) {
@@ -76,6 +90,33 @@ export class GenerarComprobanteComponent {
     });
     //this.readonly = true;
   }
+  onSubmitHeader() {
+    if (this.myFormHeader.valid) {
+      const total = this.calcularTotal();
+      const tipoComprobante = this.tipoComprobante || "";
+      const dni = this.myFormHeader.value.dni || 0;
+      try {
+        if (this.checkeoExitoso()) {
+          this.confirmarComprobanteService.confirm(total, this.tipoComprobante, this.formaDePago).then((res)=> {
+            if (res) {
+              this.pedidoService.crearPedido(this.productos, tipoComprobante, res.formaDePago, total, res.dni).subscribe((res:any)=> {
+                console.log(res);
+                this.productos = [];
+                this.productosProveedor = [];
+                this.activeModal.close(res);
+                //this.readonly = false;
+              }, (error) => {
+                this.confirmarService.confirm('Error', error.message, true, 'Aceptar', 'Cancelar');
+              })
+            }
+          })
+          
+        }
+      } catch (error) {
+        this.confirmarService.confirm('Error', JSON.stringify(error), true, 'Aceptar', 'Cancelar');
+      }
+    }
+  } 
   onSubmit() {
     if (this.myForm.valid) {
       try {
@@ -115,28 +156,27 @@ export class GenerarComprobanteComponent {
     }
   }
 
-  guardarProductos() {
-    const total = this.calcularTotal();
-    const tipoComprobante = this.tipoComprobante ||"";
-    try {
-      if (this.checkeoExitoso()) {
-        this.pedidoService.crearPedido(this.productos, tipoComprobante, this.selectedFormaDePago, total).subscribe((res:any)=> {
-          console.log(res);
-          this.productos = [];
-          this.productosProveedor = [];
-          //this.readonly = false;
-        }, (error) => {
-          this.confirmarService.confirm('Error', error.message, true, 'Aceptar', 'Cancelar');
-        })
-      }
-    } catch (error) {
-      this.confirmarService.confirm('Error', JSON.stringify(error), true, 'Aceptar', 'Cancelar');
+  private checkeoExitoso() {
+    let unicoProveedor = true;
+    if (this.tipoComprobante === 'ORC') {
+      unicoProveedor = this.esUnicoProveedor();
     }
-    
+    return this.productos.length > 0 && this.selectedFormaDePago > 0 && this.tipoComprobante && unicoProveedor;
   }
 
-  private checkeoExitoso() {
-    return this.productos.length > 0 && this.selectedFormaDePago > 0 && this.tipoComprobante;
+  private esUnicoProveedor(): boolean {
+    if (this.productos.length === 0) {
+      return true; // No hay productos, se considera único
+    }
+
+    const idProveedorSet = new Set<number>();
+    this.productos.forEach(producto => {
+      if (producto.idProveedor !== undefined) {
+        idProveedorSet.add(producto.idProveedor);
+      }
+    });
+
+    return idProveedorSet.size <= 1;
   }
 
   private productoExiste(id:any) {
@@ -164,9 +204,9 @@ export class GenerarComprobanteComponent {
 
   calcularTotal() {
     if (this.tipoComprobante === 'ORC') {
-      return this.productos.reduce((accum, producto) => accum + (producto.precioCompra|| 0 * producto.stock), 0);
+      return this.productos.reduce((accum, producto) => accum + ((producto.precioCompra || 0) * producto.stock), 0);
     } else if (this.tipoComprobante === 'ORV') {
-      return this.productos.reduce((accum, producto) => accum + ((producto.precioVenta|| 0) * producto.stock), 0);
+      return this.productos.reduce((accum, producto) => accum + ((producto.precioVenta || 0) * producto.stock), 0);
     } else {
       return 0;
     }

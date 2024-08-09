@@ -15,6 +15,8 @@ public class OrdenDeVenta extends Comprobante {
         super.calcStock = new Resta();
         //Total es positivo porque es una venta
         super.calcTotal = new Suma();
+
+        super.isUsuarioExistente = false;
     }
 
     public int calcularStock(int existente, int nuevo) {
@@ -40,6 +42,11 @@ public class OrdenDeVenta extends Comprobante {
             newProd.setPrecioCompra(prodExistente.getPrecioCompra());
             newProd.setPrecioVenta(prodExistente.getPrecioVenta());
         }
+    }
+
+    @Override
+    public int getIdUsuario(Producto producto) {
+        return 0;
     }
 
 }

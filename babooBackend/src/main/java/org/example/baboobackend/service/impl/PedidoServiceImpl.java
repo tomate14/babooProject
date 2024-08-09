@@ -302,10 +302,12 @@ public class PedidoServiceImpl implements PedidoService {
             //Guardo los productos
             List<Producto> productosGuardados = productoService.createProductos(comprobante, crearDto.getProductos());
 
-            Optional<Cliente> proveedor = clienteService.findByDni(productosGuardados.get(0).getIdProveedor());
-            if ((tipo.getCodigo() != TipoPedido.ORV.getCodigo()) && proveedor.isEmpty()) { //No necesario en las ORV
-                throw new IllegalArgumentException("No existe el proveedor");
+            Optional<Cliente> proveedor = Optional.empty();
+            if (comprobante.checkUsuarioExistente()) {
+                proveedor = clienteService.findByDni(comprobante.getIdUsuario(productosGuardados.get(0)));
             }
+            int dni = proveedor.map(Cliente::getDni).orElseGet(crearDto::getDni);
+
             Pedido pedido = new Pedido();
             pedido.setTipoPedido(tipo.getCodigo());
             pedido.setEstado(Estado.COMPLETO.getDescripcion());
@@ -313,7 +315,7 @@ public class PedidoServiceImpl implements PedidoService {
             pedido.setFechaPedido(fecha);
             pedido.setTotal(comprobante.calcularTotal(crearDto.getTotal()));
             pedido.setEstadoEnvio(EstadoPedido.ENVIADO.getCodigo());
-            pedido.setDniCliente(proveedor.get().getDni());
+            pedido.setDniCliente(dni);
 
             Numeracion numerador = generarNumeroComprobante(pedido);
             pedido.setNumeroComprobante(formatearNumero(numerador.getNumeroComprobante()));

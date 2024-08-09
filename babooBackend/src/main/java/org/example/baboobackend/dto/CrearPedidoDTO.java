@@ -11,4 +11,5 @@ public class CrearPedidoDTO {
     private String tipoComprobante;
     private int formaPago;
     private int total;
+    private int dni;
 }
