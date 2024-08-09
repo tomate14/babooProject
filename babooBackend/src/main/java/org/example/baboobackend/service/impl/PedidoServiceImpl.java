@@ -10,24 +10,25 @@ import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.example.baboobackend.daos.ClienteRepository;
-import org.example.baboobackend.daos.NumeracionRepository;
-import org.example.baboobackend.daos.PagoRepository;
-import org.example.baboobackend.daos.PedidoRepository;
+import org.example.baboobackend.comprobante.Comprobante;
+import org.example.baboobackend.comprobante.factory.ComprobanteFactory;
+import org.example.baboobackend.daos.*;
+import org.example.baboobackend.dto.CrearPedidoDTO;
 import org.example.baboobackend.dto.PedidoDeudaDTO;
-import org.example.baboobackend.entities.Cliente;
-import org.example.baboobackend.entities.Numeracion;
-import org.example.baboobackend.entities.Pago;
-import org.example.baboobackend.entities.Pedido;
+import org.example.baboobackend.entities.*;
 import org.example.baboobackend.enumerados.Estado;
 import org.example.baboobackend.enumerados.EstadoPedido;
 import org.example.baboobackend.enumerados.TipoPedido;
+import org.example.baboobackend.service.ClienteService;
 import org.example.baboobackend.service.PedidoService;
+import org.example.baboobackend.service.ProductoService;
+import org.example.baboobackend.utils.FechaUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class PedidoServiceImpl implements PedidoService {
@@ -37,35 +38,32 @@ public class PedidoServiceImpl implements PedidoService {
     private EntityManager entityManager;
 
     @Autowired
+    private ProductoService productoService;
+
+    @Autowired
     private PedidoRepository pedidoRepository;
 
     @Autowired
     private PagoRepository pagoRepository;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private ClienteService clienteService;
 
     @Autowired
     private NumeracionRepository numeracionRepository;
+    @Autowired
+    private ComprobanteItemServiceImpl comprobanteItemServiceImpl;
+    @Autowired
+    private ComprobanteItemRepository comprobanteItemRepository;
 
     @Transactional
     public Pedido crearPedido(Pedido nuevoPedido) {
         if (nuevoPedido == null || nuevoPedido.getDniCliente() == 0) {
             throw new IllegalArgumentException("Datos incompletos al crear pedido");
         }
-
-        //obtener numeracion por defecto
-        int tipo = checkTipo(nuevoPedido);
-
-        Numeracion numerador = numeracionRepository.findByTipoComprobante(tipo);
-        if (Objects.isNull(numerador)) {
-            numerador = new Numeracion();
-            numerador.setNumeroComprobante(1);
-            numerador.setTipoComprobante(nuevoPedido.getTipoPedido());
-        }
-        int index = numerador.getNumeroComprobante();
-        nuevoPedido.setNumeroComprobante(formatearNumero(index));
-        Optional<Cliente> cliente = clienteRepository.findByDni(nuevoPedido.getDniCliente());
+        Numeracion numerador = generarNumeroComprobante(nuevoPedido);
+        nuevoPedido.setNumeroComprobante(formatearNumero(numerador.getNumeroComprobante()));
+        Optional<Cliente> cliente = clienteService.findByDni(nuevoPedido.getDniCliente());
         if (cliente.isEmpty()) {
             throw new IllegalArgumentException("No se encontró el cliente asociado. Darlo de alta");
         }
@@ -80,7 +78,7 @@ public class PedidoServiceImpl implements PedidoService {
         nuevoPedido.setNombreCliente(cliente.get().getNombre());
         nuevoPedido.setTelefonoCliente(cliente.get().getTelefono());
 
-        numerador.setNumeroComprobante(index + 1);
+        numerador.setNumeroComprobante(numerador.getNumeroComprobante() + 1);
         numeracionRepository.save(numerador);
 
         return nuevoPedido;
@@ -146,7 +144,7 @@ public class PedidoServiceImpl implements PedidoService {
 
     public List<Pedido> getPedidosVencidos(String fechaDesde, int tipoPedido) {
         List<Pedido> pedidos = pedidoRepository.findVencidosByFechaPedidoAndTipoPedido(fechaDesde, tipoPedido);
-        List<Cliente> clientes = clienteRepository.findAll();
+        List<Cliente> clientes = clienteService.findAll();
         for (Pedido pedido : pedidos) {
             Optional<Cliente> clienteOpt = clientes.stream()
                     .filter(cliente -> cliente.getDni() == pedido.getDniCliente())
@@ -167,7 +165,7 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         Pedido pedido = pedidoOpt.get();
-        Optional<Cliente> clienteOpt = clienteRepository.findByDni(pedido.getDniCliente());
+        Optional<Cliente> clienteOpt = clienteService.findByDni(pedido.getDniCliente());
         if (clienteOpt.isEmpty()) {
             throw new IllegalArgumentException("Cliente con id "+ pedido.getDniCliente() + " no encontrado");
         }
@@ -257,7 +255,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         if (queryParams.containsKey("nombreCliente")) {
             String regex = Pattern.compile(queryParams.get("nombreCliente"), Pattern.CASE_INSENSITIVE).toString();
-            List<Cliente> clientes = clienteRepository.findByNombreContaining(regex);
+            List<Cliente> clientes = clienteService.findByNombreContaining(regex);
             if (clientes.isEmpty()) {
                 throw new NoSuchElementException("No se encontraron clientes con el nombre proporcionado");
             }
@@ -272,7 +270,7 @@ public class PedidoServiceImpl implements PedidoService {
                 pedido.setTelefonoCliente(cliente.getTelefono());
             }
         }
-        List<Cliente> clientes = clienteRepository.findAll();
+        List<Cliente> clientes = clienteService.findAll();
         pedidos.forEach(pedido -> {
             Optional<Cliente> c = clientes.stream().filter(cliente -> pedido.getDniCliente() == cliente.getDni()).findFirst();
             if (c.isPresent()) {
@@ -283,7 +281,84 @@ public class PedidoServiceImpl implements PedidoService {
 
         return pedidos;
     }
+    @Transactional
+    public Pedido generarPedido(CrearPedidoDTO crearDto) {
+        try {
+            final String fecha = FechaUtils.obtenerFechaEnUTC();
+            TipoPedido tipo = TipoPedido.valueOf(crearDto.getTipoComprobante());
+            Comprobante comprobante = ComprobanteFactory.createComprobante(tipo);
 
+            List<Producto> originales = crearDto.getProductos().stream().filter(p-> p.getId() != null).toList();
+
+            // Crear los HashMap para almacenar id-precioCompra y id-stock
+            HashMap<Integer, Integer> idPrecioMap = new HashMap<>();
+            HashMap<Integer, Integer> idStockMap = new HashMap<>();
+
+            // Rellenar los HashMap con los valores correspondientes
+            for (Producto producto : originales) {
+                idPrecioMap.put(producto.getId(), comprobante.getPrecio(producto));
+                idStockMap.put(producto.getId(), producto.getStock());
+            }
+            //Guardo los productos
+            List<Producto> productosGuardados = productoService.createProductos(comprobante, crearDto.getProductos());
+
+            Optional<Cliente> proveedor = Optional.empty();
+            if (comprobante.checkUsuarioExistente()) {
+                proveedor = clienteService.findByDni(comprobante.getIdUsuario(productosGuardados.get(0)));
+            }
+            int dni = proveedor.map(Cliente::getDni).orElseGet(crearDto::getDni);
+
+            Pedido pedido = new Pedido();
+            pedido.setTipoPedido(tipo.getCodigo());
+            pedido.setEstado(Estado.COMPLETO.getDescripcion());
+            pedido.setConSena(true);
+            pedido.setFechaPedido(fecha);
+            pedido.setTotal(comprobante.calcularTotal(crearDto.getTotal()));
+            pedido.setEstadoEnvio(EstadoPedido.ENVIADO.getCodigo());
+            pedido.setDniCliente(dni);
+
+            Numeracion numerador = generarNumeroComprobante(pedido);
+            pedido.setNumeroComprobante(formatearNumero(numerador.getNumeroComprobante()));
+            pedido.setDescripcion("Pedido generado por "+tipo.getDescripcion() + " numero "+pedido.getNumeroComprobante());
+
+            //Actualizo el numero de comprobante
+            numerador.setNumeroComprobante(numerador.getNumeroComprobante() + 1);
+            numeracionRepository.save(numerador);
+
+            //Guardo el pedido
+            Pedido pedidoGuardado = pedidoRepository.save(pedido);
+            List<ComprobanteItem> items = new ArrayList<>();
+            productosGuardados.forEach(producto -> {
+                //Actualizar el historico de cada Comprobante
+                ComprobanteItem comprobanteItem = new ComprobanteItem();
+                comprobanteItem.setIdPedido(pedidoGuardado.getId());
+                comprobanteItem.setStock(producto.getStock());
+                comprobanteItem.setIdProducto(producto.getId());
+                Optional<Producto> existente = originales.stream().filter(producto1 -> Objects.equals(producto.getId(), producto1.getId())).findFirst();
+                comprobanteItem.setPrecio(producto.getPrecioCompra());
+                existente.ifPresent(value -> comprobanteItem.setPrecio(idPrecioMap.get(existente.get().getId())));
+                comprobanteItem.setStock(producto.getStock());
+                existente.ifPresent(value -> comprobanteItem.setStock(idStockMap.get(existente.get().getId())));
+                items.add(comprobanteItem);
+            });
+            //Guardo los items de cada pedido
+            comprobanteItemRepository.saveAll(items);
+
+            Pago pago = new Pago();
+            pago.setFechaPago(fecha);
+            pago.setIdPedido(pedido.getId());
+            pago.setFormaPago(crearDto.getFormaPago());
+            pago.setValor(pedido.getTotal());
+            pago.setDescripcion("Pago de " + tipo.getDescripcion() + " numero " + pedido.getNumeroComprobante());
+
+            //Guardo el pago del pedido
+            pagoRepository.save(pago);
+
+            return pedido;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
     private String formatearNumero(int numero) {
         return String.format("%08d", numero);
     }
@@ -333,6 +408,18 @@ public class PedidoServiceImpl implements PedidoService {
         cq.where(predicates.toArray(new Predicate[0]));
 
         return entityManager.createQuery(cq).getResultList();
+    }
+
+    private Numeracion generarNumeroComprobante(Pedido pedido) {
+        int tipo = checkTipo(pedido);
+
+        Numeracion numerador = numeracionRepository.findByTipoComprobante(tipo);
+        if (Objects.isNull(numerador)) {
+            numerador = new Numeracion();
+            numerador.setNumeroComprobante(1);
+            numerador.setTipoComprobante(pedido.getTipoPedido());
+        }
+        return numerador;
     }
 
 }

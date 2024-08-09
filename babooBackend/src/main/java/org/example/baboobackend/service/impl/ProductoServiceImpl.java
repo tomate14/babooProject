@@ -7,12 +7,15 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
+import org.example.baboobackend.comprobante.Comprobante;
 import org.example.baboobackend.daos.ClienteRepository;
+import org.example.baboobackend.daos.NumeracionRepository;
 import org.example.baboobackend.daos.ProductoRepository;
 import org.example.baboobackend.entities.Cliente;
 import org.example.baboobackend.entities.Pedido;
 import org.example.baboobackend.entities.Producto;
 import org.example.baboobackend.enumerados.TipoUsuario;
+import org.example.baboobackend.service.PedidoService;
 import org.example.baboobackend.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,9 @@ public class ProductoServiceImpl implements ProductoService {
         if (queryParams.containsKey(Producto.NOMBRE)) {
             filtros.put(Producto.NOMBRE,queryParams.get(Producto.NOMBRE));
         }
+        if (queryParams.containsKey(Producto.ID_PROVEEDOR)) {
+            filtros.put(Producto.ID_PROVEEDOR,queryParams.get(Producto.ID_PROVEEDOR));
+        }
 
         List<Producto> productos = new ArrayList<>();
 
@@ -66,13 +72,23 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Transactional
-    public Producto createProducto(Producto producto) {
-        return productoRepository.save(producto);
+    public List<Producto> createProductos(Comprobante comprobante, List<Producto> productos) {
+        productos.forEach(newProd -> {
+            if (newProd.getId() != null) {
+                Optional<Producto> optExistente = productoRepository.findById(newProd.getId());
+                comprobante.buildForSave(optExistente, newProd);
+            } else {
+                //New Product. Controlar antes de enviar en las ordenes de venta ids != null
+                Optional<Cliente> proveedor = clienteRepository.findByDni(newProd.getIdProveedor());
+                proveedor.ifPresent(cliente -> newProd.setPrecioVenta(newProd.calcularPrecioConAumento(cliente)));
+            }
+        });
+        return productoRepository.saveAll(productos);
     }
 
     @Transactional
     public Optional<Producto> updateProducto(Producto producto) {
-        return productoRepository.findById(producto.getId()).map(existingProducto -> {
+         return productoRepository.findById(producto.getId()).map(existingProducto -> {
             existingProducto.setNombre(producto.getNombre());
             existingProducto.setCodigoBarra(producto.getCodigoBarra());
             existingProducto.setPrecioCompra(producto.getPrecioCompra());
@@ -98,7 +114,7 @@ public class ProductoServiceImpl implements ProductoService {
         for (Map.Entry<String, Object> entry : filtros.entrySet()) {
             if (Producto.NOMBRE.equals(entry.getKey())) {
                 predicates.add(cb.like(cb.lower(producto.get(Producto.NOMBRE)), "%" + entry.getValue().toString().toLowerCase() + "%"));
-            } else if (Producto.ID.equals(entry.getKey())) {
+            } else {
                 predicates.add(cb.equal(producto.get(entry.getKey()), entry.getValue()));
             }
         }

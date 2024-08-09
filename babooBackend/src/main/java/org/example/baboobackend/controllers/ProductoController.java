@@ -36,11 +36,12 @@ public class ProductoController {
         return producto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @PostMapping
-    public ResponseEntity<Producto> createProducto(@RequestBody Producto producto) {
-        Producto createdProducto = productoService.createProducto(producto);
+    /*@PostMapping
+    public ResponseEntity<List<Producto>> createProductos(@RequestBody List<Producto> productos) {
+        //Mover a generar Pedido
+        List<Producto> createdProducto = productoService.createProductos(productos);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProducto);
-    }
+    }*/
 
     @PutMapping
     public ResponseEntity<Producto> updateProducto(@RequestBody Producto producto) {

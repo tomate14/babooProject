@@ -12,4 +12,10 @@ public interface ClienteService {
     List<Cliente> getAllClientes(Map<String, String> queryParams);
     Cliente createCliente(Cliente cliente);
     Optional<Cliente> updateCliente(Cliente cliente);
+
+    Optional<Cliente> findByDni(int dniCliente);
+
+    List<Cliente> findAll();
+
+    List<Cliente> findByNombreContaining(String regex);
 }

@@ -81,7 +81,7 @@ export class TablaCajaComponent implements OnInit{
   }
 
   onSubmit() {  
-    const pagosSinPedidos = this.pagos.filter((p)=> p.id=== '-1' || p.id === '-2' || p.id === '-3')  
+    const pagosSinPedidos = this.pagos.filter((p)=> p.idPedido == '-1' || p.idPedido == '-2' || p.idPedido == '-3')  
     if (pagosSinPedidos && pagosSinPedidos.length === 0) {
       this.checkearCajasSinCerrar();
     } else {
@@ -201,7 +201,7 @@ export class TablaCajaComponent implements OnInit{
       if (res) {
         const fechaActual = nowConLuxonATimezoneArgentina();
         const primerFechaSinCerrar = res;
-        const diferencia = diferenciaDias(fechaActual, primerFechaSinCerrar);
+        const diferencia = diferenciaDias(fechaActual, primerFechaSinCerrar.fecha);
         const promises = [];
         if (diferencia <= 1) {
           //No hay cajas sin cerrar, proceder
