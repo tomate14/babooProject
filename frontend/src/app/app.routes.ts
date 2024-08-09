@@ -4,7 +4,6 @@ import { TablaClientesComponent } from './components/tabla-clientes/tabla-client
 import { TablaCajaComponent } from './components/tabla-caja/tabla-caja.component';
 import { FlujoCajaComponent } from './components/flujo-caja/flujo-caja.component';
 import { TablaProductoComponent } from './components/tabla-productos/tabla-productos.component';
-import { GenerarComprobanteComponent } from './popups/generar-comprobante/generar-comprobante.component';
 
 export const routes: Routes = [
     { path: '', component: TablaClientesComponent },
@@ -13,8 +12,8 @@ export const routes: Routes = [
     { path: 'cuentaCorriente/:id', component: TablaPedidoComponent },
     { path: 'clientes/:id', component: TablaClientesComponent },
     { path: 'proveedores/:id', component: TablaClientesComponent },
-    { path: 'ordencompra/:tipo', component: GenerarComprobanteComponent },
-    { path: 'ordenventa/:tipo', component: GenerarComprobanteComponent },
+    { path: 'ordencompra/:id', component: TablaPedidoComponent },
+    { path: 'ordenventa/:id', component: TablaPedidoComponent },
     { path: 'caja', component: TablaCajaComponent },
     { path: 'estadisticas', component: FlujoCajaComponent }
   ];

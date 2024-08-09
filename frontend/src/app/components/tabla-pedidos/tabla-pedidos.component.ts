@@ -129,7 +129,9 @@ export class TablaPedidoComponent implements OnInit {
   }
 
   crearPedido() {
-    this.crearPedidoModal.crearPedido().then((res)=> {
+    const tipoCompro = this.tipoDePedido.find((tipo)=> tipo.value === this.tipoPedido);
+    const sigla = tipoCompro?.sigla || 'PED';
+    this.crearPedidoModal.crearPedido(sigla).then((res)=> {
       if(res){
         this.pedidos.unshift(res);
       }
