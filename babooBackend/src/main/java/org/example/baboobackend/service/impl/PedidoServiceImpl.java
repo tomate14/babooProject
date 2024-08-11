@@ -225,8 +225,8 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         if (queryParams.containsKey(Pedido.NUMERO_COMPROBANTE)) {
-            String regex = ".*" + queryParams.get(Pedido.NUMERO_COMPROBANTE) + ".*";
-            filtros.put(Pedido.NUMERO_COMPROBANTE, regex);
+            //String regex = ".*" + queryParams.get(Pedido.NUMERO_COMPROBANTE) + ".*";
+            filtros.put(Pedido.NUMERO_COMPROBANTE, queryParams.get(Pedido.NUMERO_COMPROBANTE));
         }
 
         if (queryParams.containsKey(Pedido.FECHA_DESDE) || queryParams.containsKey(Pedido.FECHA_HASTA)) {
