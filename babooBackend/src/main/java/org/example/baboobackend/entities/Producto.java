@@ -18,7 +18,7 @@ public class Producto {
     private Integer id;
 
     @Column(nullable = false)
-    private String nombre;
+    protected String nombre;
 
     @Column(name = "codigo_barra")
     private String codigoBarra;
@@ -33,7 +33,7 @@ public class Producto {
     private Integer idProveedor;
 
     @Column(nullable = false)
-    private Integer stock;
+    protected Integer stock;
 
     @Transient
     private String nombreProveedor;
