@@ -18,6 +18,7 @@ import { EstadoEnvio, estadoDeEnvio } from '../../../clases/constantes/estadoEnv
 import { PagosService } from '../../../services/pago.service';
 import { DeudaPedido } from '../../../clases/dto/deudaPedido';
 import { enviarMensajeAltaPedido, notificarDeudaPedido } from '../../../utils/mensajesWhatsapp';
+import { ExportPDFService } from '../../../services/exportPDF.service';
 
 const defaultFormObject = {
   dniCliente: null,
@@ -52,7 +53,7 @@ export class TablaPedidoComponent implements OnInit {
   constructor(private route: ActivatedRoute, private fb: FormBuilder, private pedidosService: PedidosService,
     private pagosService: PagosService,
     private crearPedidoModal:CrearPedidoService, private pagosPorPedidosService: ListarPagosPorPedidosService,
-    private editarPedidoService:EditarPedidoService) {
+    private editarPedidoService:EditarPedidoService, private exportPDFService:ExportPDFService) {
     this.route.params.subscribe(params => {
       this.tipoPedido = +params['id']; // El + convierte el string a number
     });
@@ -197,6 +198,17 @@ export class TablaPedidoComponent implements OnInit {
       const nombre = pedido.nombreCliente || "";
       enviarMensajeAltaPedido(nombre, pedidoId, pedido.descripcion, sena, saldo, pedido.telefonoCliente, numeroComprobante);
     })
+  }
+
+  imprimirComprobante(pedido: Pedido) {
+    if (pedido.id) {
+      const idPedido = pedido.id;
+      this.exportPDFService.getDocumentoPDF(idPedido).subscribe((res: Blob | MediaSource) => {
+        console.log("asd")
+        const url = window.URL.createObjectURL(res);
+        window.open(url);
+      });
+    }
   }
 
   private enviarWP(res:DeudaPedido) {
