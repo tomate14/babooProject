@@ -63,7 +63,7 @@ export class GenerarComprobanteComponent implements OnInit{
       this.clienteService.getClientes(this.tipoUsuario).subscribe(res => {
         this.usuarios = res;
       })
-    } else if (this.tipoComprobante === 'ORV') {
+    } else /*if (this.tipoComprobante === 'ORV')*/ {
       this.tipoUsuario = 0;
       this.productoService.getByParams([]).subscribe(res => {
         this.productosProveedor = res;
@@ -132,7 +132,7 @@ export class GenerarComprobanteComponent implements OnInit{
           this.setPrecio(producto, this.myForm.value);
           // Ordenes de ventas no habilitadas para dar de alta productos. Solo hacer por ORDEN DE COMPRA
           // para agregar el stock correspondiente.
-          if (this.tipoComprobante === 'ORV' && !producto.id) {
+          if ((this.tipoComprobante === 'ORV' || this.tipoComprobante === 'NDC') && !producto.id) {
             this.confirmarService.confirm('Error', 'Para agregar un producto nuevo hacerlo desde la Orden de Compra', true, 'Aceptar', 'Cancelar')
             .then((res)=> {
               this.myForm.reset();
@@ -205,7 +205,7 @@ export class GenerarComprobanteComponent implements OnInit{
   calcularTotal() {
     if (this.tipoComprobante === 'ORC') {
       return this.productos.reduce((accum, producto) => accum + ((producto.precioCompra || 0) * producto.stock), 0);
-    } else if (this.tipoComprobante === 'ORV') {
+    } else if (this.tipoComprobante === 'ORV' || this.tipoComprobante === 'NDC') {
       return this.productos.reduce((accum, producto) => accum + ((producto.precioVenta || 0) * producto.stock), 0);
     } else {
       return 0;
@@ -216,7 +216,7 @@ export class GenerarComprobanteComponent implements OnInit{
   getPrecioProducto(producto: Producto): any {
     if (this.tipoComprobante === 'ORC') {
       return producto.precioCompra;
-    } else if (this.tipoComprobante === 'ORV') {
+    } else if (this.tipoComprobante === 'ORV' || this.tipoComprobante === 'NDC') {
       return producto.precioVenta;
     }
   }
@@ -224,7 +224,7 @@ export class GenerarComprobanteComponent implements OnInit{
   setPrecio(producto: Producto, value: any) {
     if (this.tipoComprobante === 'ORC') {
       producto.precioCompra = +value.precio;
-    } else if (this.tipoComprobante === 'ORV') {
+    } else if (this.tipoComprobante === 'ORV' || this.tipoComprobante === 'NDC') {
       producto.precioVenta = +value.precio;
     }
   }

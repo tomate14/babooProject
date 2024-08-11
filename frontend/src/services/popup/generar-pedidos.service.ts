@@ -20,7 +20,7 @@ export class CrearPedidoService {
     let comprobante = null;
     let title = "Generar Pedido";
     
-    if (tipoComprobante === 'ORC' || tipoComprobante === 'ORV') {
+    if (tipoComprobante === 'ORC' || tipoComprobante === 'ORV' || tipoComprobante === 'NDC') {
       comprobante = GenerarComprobanteComponent;
       title = "Generar "+tipoComprobante;
     } else {

@@ -14,6 +14,7 @@ export const routes: Routes = [
     { path: 'proveedores/:id', component: TablaClientesComponent },
     { path: 'ordencompra/:id', component: TablaPedidoComponent },
     { path: 'ordenventa/:id', component: TablaPedidoComponent },
+    { path: 'notacredito/:id', component: TablaPedidoComponent },
     { path: 'caja', component: TablaCajaComponent },
     { path: 'estadisticas', component: FlujoCajaComponent }
   ];

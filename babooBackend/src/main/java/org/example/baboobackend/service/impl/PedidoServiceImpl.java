@@ -310,7 +310,7 @@ public class PedidoServiceImpl implements PedidoService {
 
             Pedido pedido = new Pedido();
             pedido.setTipoPedido(tipo.getCodigo());
-            pedido.setEstado(Estado.COMPLETO.getDescripcion());
+            comprobante.setEstado(pedido);
             pedido.setConSena(true);
             pedido.setFechaPedido(fecha);
             pedido.setTotal(comprobante.calcularTotal(crearDto.getTotal()));
@@ -319,7 +319,7 @@ public class PedidoServiceImpl implements PedidoService {
 
             Numeracion numerador = generarNumeroComprobante(pedido);
             pedido.setNumeroComprobante(formatearNumero(numerador.getNumeroComprobante()));
-            pedido.setDescripcion("Pedido generado por "+tipo.getDescripcion() + " numero "+pedido.getNumeroComprobante());
+            pedido.setDescripcion("Comprobante generado por "+tipo.getDescripcion() + " numero "+pedido.getNumeroComprobante());
 
             //Actualizo el numero de comprobante
             numerador.setNumeroComprobante(numerador.getNumeroComprobante() + 1);
