@@ -1,32 +1,31 @@
 package org.example.baboobackend.comprobante;
 
-import org.example.baboobackend.comprobante.calculador.Calculador;
 import org.example.baboobackend.comprobante.calculador.Resta;
 import org.example.baboobackend.comprobante.calculador.Suma;
-import org.example.baboobackend.entities.Cliente;
 import org.example.baboobackend.entities.Pedido;
 import org.example.baboobackend.entities.Producto;
 import org.example.baboobackend.enumerados.Estado;
 
 import java.util.Optional;
 
-public class OrdenDeVenta extends Comprobante {
+public class NotaDeCredito extends Comprobante {
 
-    public OrdenDeVenta() {
-        //stock se resta del total
-        super.calcStock = new Resta();
-        //Total es positivo porque es una venta
-        super.calcTotal = new Suma();
-
+    public NotaDeCredito() {
+        //stock se suma al total
+        super.calcStock = new Suma();
+        //Total es positivo porque es un pago
+        super.calcTotal = new Resta();
         super.isUsuarioExistente = false;
     }
 
+    @Override
     public int calcularStock(int existente, int nuevo) {
         return calcStock.calcular(existente, nuevo);
     }
 
+    @Override
     public int calcularTotal(int total) {
-        return calcTotal.calcular(total, 0);
+        return calcTotal.calcular(0, total);
     }
 
     @Override
@@ -36,14 +35,13 @@ public class OrdenDeVenta extends Comprobante {
 
     @Override
     public void buildForSave(Optional<Producto> optExistente, Producto newProd) {
-        if (optExistente.isPresent()) {
-            final Producto prodExistente = optExistente.get();
-            int nuevoStock = this.calcularStock(prodExistente.getStock(), newProd.getStock());
-            newProd.setIdProveedor(prodExistente.getIdProveedor());
-            newProd.setStock(nuevoStock);
-            newProd.setPrecioCompra(prodExistente.getPrecioCompra());
-            newProd.setPrecioVenta(prodExistente.getPrecioVenta());
-        }
+        final Producto prodExistente = optExistente.get();
+        int nuevoStock = this.calcularStock(prodExistente.getStock(), newProd.getStock());
+        newProd.setStock(nuevoStock);
+        newProd.setPrecioVenta(prodExistente.getPrecioVenta());
+        newProd.setPrecioCompra(prodExistente.getPrecioCompra());
+        newProd.setCodigoBarra(prodExistente.getCodigoBarra());
+        newProd.setIdProveedor(prodExistente.getIdProveedor());
     }
 
     @Override
@@ -53,6 +51,6 @@ public class OrdenDeVenta extends Comprobante {
 
     @Override
     public void setEstado(Pedido pedido) {
-        pedido.setEstado(Estado.COMPLETO.getDescripcion());
+        pedido.setEstado(Estado.PENDIENTE.getDescripcion());
     }
 }

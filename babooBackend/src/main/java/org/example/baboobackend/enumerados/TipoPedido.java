@@ -4,7 +4,8 @@ public enum TipoPedido {
     PEDIDO(1, "PEDIDO", "PED"),
     CC(2, "CUENTA CORRIENTE", "CC"),
     ORC(3, "ORDEN DE COMPRA", "ORC"),
-    ORV(4, "ORDEN DE VENTA", "ORV");
+    ORV(4, "ORDEN DE VENTA", "ORV"),
+    NDC(5, "NOTA DE CREDITO", "NDC");;
 
     private final int codigo;
     private final String descripcion;

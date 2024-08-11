@@ -3,7 +3,9 @@ package org.example.baboobackend.comprobante;
 import org.example.baboobackend.comprobante.calculador.Calculador;
 import org.example.baboobackend.comprobante.calculador.Resta;
 import org.example.baboobackend.comprobante.calculador.Suma;
+import org.example.baboobackend.entities.Pedido;
 import org.example.baboobackend.entities.Producto;
+import org.example.baboobackend.enumerados.Estado;
 
 import java.util.Optional;
 
@@ -45,5 +47,10 @@ public class OrdenDeCompra extends Comprobante {
     @Override
     public int getIdUsuario(Producto producto) {
         return producto.getIdProveedor();
+    }
+
+    @Override
+    public void setEstado(Pedido pedido) {
+        pedido.setEstado(Estado.COMPLETO.getDescripcion());
     }
 }

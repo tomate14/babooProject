@@ -29,6 +29,7 @@
                   <td *ngIf="pedido.tipoPedido === 2">CUENTA CORRIENTE</td>
                   <td *ngIf="pedido.tipoPedido === 3">ORDEN DE COMPRA</td>
                   <td *ngIf="pedido.tipoPedido === 4">ORDEN DE VENTA</td>
+                  <td *ngIf="pedido.tipoPedido === 5">NOTA DE CREDITO</td>
                   <td>
                     <i *ngIf="pedido.estado === 'COMPLETO'" class="fa fa-check" title="Completo"></i>
                     <i *ngIf="pedido.estado === 'PENDIENTE'" class="fa fa-times" title="Pendiente"></i>
