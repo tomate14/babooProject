@@ -1,5 +1,6 @@
 package org.example.baboobackend.service.impl;
 
+import ch.qos.logback.core.util.StringUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -17,14 +18,21 @@ import org.example.baboobackend.entities.Producto;
 import org.example.baboobackend.enumerados.TipoUsuario;
 import org.example.baboobackend.service.PedidoService;
 import org.example.baboobackend.service.ProductoService;
+import org.krysalis.barcode4j.impl.upcean.EAN13Bean;
+import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
 
+    private static final String COUNTRY_CODE = "779";
+    private static final String COMPANY_CODE = "430496";
     @Autowired
     private ProductoRepository productoRepository;
 
@@ -83,7 +91,14 @@ public class ProductoServiceImpl implements ProductoService {
                 proveedor.ifPresent(cliente -> newProd.setPrecioVenta(newProd.calcularPrecioConAumento(cliente)));
             }
         });
-        return productoRepository.saveAll(productos);
+        List<Producto> productosGuardados = productoRepository.saveAll(productos);
+        productosGuardados.forEach((producto) -> {
+            if (StringUtil.isNullOrEmpty(producto.getCodigoBarra())) {
+                producto.setCodigoBarra(this.getCodigoDeBarra(producto.getId()));
+            }
+        });
+        productoRepository.saveAll(productosGuardados);
+        return productosGuardados;
     }
 
     @Transactional
@@ -102,6 +117,44 @@ public class ProductoServiceImpl implements ProductoService {
     @Transactional
     public void deleteProducto(Integer id) {
         productoRepository.deleteById(id);
+    }
+    public String getCodigoDeBarra(int idProducto) {
+        String productCode = String.format("%03d", idProducto);  // Formatea el ID del producto con ceros a la izquierda si es necesario
+        String rawBarcode = COUNTRY_CODE + COMPANY_CODE + productCode;
+        return rawBarcode + calculateCheckDigit(rawBarcode);
+    }
+    public byte[] generateBarcode(int idProducto) throws IOException {
+
+        Optional<Producto> prodExistente = productoRepository.findById(idProducto);
+        if (prodExistente.isPresent()) {
+            String ean13Barcode = prodExistente.get().getCodigoBarra();
+            EAN13Bean barcodeGenerator = new EAN13Bean();
+            final int dpi = 160;
+
+            barcodeGenerator.setModuleWidth(0.2);
+            barcodeGenerator.doQuietZone(true);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BitmapCanvasProvider canvas = new BitmapCanvasProvider(baos, "image/x-png", dpi, BufferedImage.TYPE_BYTE_BINARY, false, 0);
+
+            barcodeGenerator.generateBarcode(canvas, ean13Barcode);
+            canvas.finish();
+
+            return baos.toByteArray();
+        }
+        throw new RuntimeException("No se pudo generar el codigo de barra "+idProducto);
+    }
+
+    private int calculateCheckDigit(String barcode) {
+        int sum = 0;
+
+        for (int i = 0; i < barcode.length(); i++) {
+            int digit = Character.getNumericValue(barcode.charAt(i));
+            sum += (i % 2 == 0) ? digit : digit * 3;
+        }
+
+        int mod = sum % 10;
+        return mod == 0 ? 0 : 10 - mod;
     }
 
     private List<Producto> findByCriteria(Map<String, Object> filtros) {

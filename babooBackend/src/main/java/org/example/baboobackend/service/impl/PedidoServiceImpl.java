@@ -283,81 +283,78 @@ public class PedidoServiceImpl implements PedidoService {
     }
     @Transactional
     public Pedido generarPedido(CrearPedidoDTO crearDto) {
-        try {
-            final String fecha = FechaUtils.obtenerFechaEnUTC();
-            TipoPedido tipo = TipoPedido.valueOf(crearDto.getTipoComprobante());
-            Comprobante comprobante = ComprobanteFactory.createComprobante(tipo);
 
-            List<Producto> originales = crearDto.getProductos().stream().filter(p-> p.getId() != null).toList();
+        final String fecha = FechaUtils.obtenerFechaEnUTC();
+        TipoPedido tipo = TipoPedido.valueOf(crearDto.getTipoComprobante());
+        Comprobante comprobante = ComprobanteFactory.createComprobante(tipo);
 
-            // Crear los HashMap para almacenar id-precioCompra y id-stock
-            HashMap<Integer, Integer> idPrecioMap = new HashMap<>();
-            HashMap<Integer, Integer> idStockMap = new HashMap<>();
+        List<Producto> originales = crearDto.getProductos().stream().filter(p-> p.getId() != null).toList();
 
-            // Rellenar los HashMap con los valores correspondientes
-            for (Producto producto : originales) {
-                idPrecioMap.put(producto.getId(), comprobante.getPrecio(producto));
-                idStockMap.put(producto.getId(), producto.getStock());
-            }
-            //Guardo los productos
-            List<Producto> productosGuardados = productoService.createProductos(comprobante, crearDto.getProductos());
+        // Crear los HashMap para almacenar id-precioCompra y id-stock
+        HashMap<Integer, Integer> idPrecioMap = new HashMap<>();
+        HashMap<Integer, Integer> idStockMap = new HashMap<>();
 
-            Optional<Cliente> proveedor = Optional.empty();
-            if (comprobante.checkUsuarioExistente()) {
-                proveedor = clienteService.findByDni(comprobante.getIdUsuario(productosGuardados.get(0)));
-            }
-            int dni = proveedor.map(Cliente::getDni).orElseGet(crearDto::getDni);
-
-            Pedido pedido = new Pedido();
-            pedido.setTipoPedido(tipo.getCodigo());
-            comprobante.setEstado(pedido);
-            pedido.setConSena(true);
-            pedido.setFechaPedido(fecha);
-            pedido.setTotal(comprobante.calcularTotal(crearDto.getTotal()));
-            pedido.setEstadoEnvio(EstadoPedido.ENVIADO.getCodigo());
-            pedido.setDniCliente(dni);
-
-            Numeracion numerador = generarNumeroComprobante(pedido);
-            pedido.setNumeroComprobante(formatearNumero(numerador.getNumeroComprobante()));
-            pedido.setDescripcion("Comprobante generado por "+tipo.getDescripcion() + " numero "+pedido.getNumeroComprobante());
-
-            //Actualizo el numero de comprobante
-            numerador.setNumeroComprobante(numerador.getNumeroComprobante() + 1);
-            numeracionRepository.save(numerador);
-
-            //Guardo el pedido
-            Pedido pedidoGuardado = pedidoRepository.save(pedido);
-            List<ComprobanteItem> items = new ArrayList<>();
-            productosGuardados.forEach(producto -> {
-                //Actualizar el historico de cada Comprobante
-                ComprobanteItem comprobanteItem = new ComprobanteItem();
-                comprobanteItem.setIdPedido(pedidoGuardado.getId());
-                comprobanteItem.setStock(producto.getStock());
-                comprobanteItem.setIdProducto(producto.getId());
-                Optional<Producto> existente = originales.stream().filter(producto1 -> Objects.equals(producto.getId(), producto1.getId())).findFirst();
-                comprobanteItem.setPrecio(producto.getPrecioCompra());
-                existente.ifPresent(value -> comprobanteItem.setPrecio(idPrecioMap.get(existente.get().getId())));
-                comprobanteItem.setStock(producto.getStock());
-                existente.ifPresent(value -> comprobanteItem.setStock(idStockMap.get(existente.get().getId())));
-                items.add(comprobanteItem);
-            });
-            //Guardo los items de cada pedido
-            comprobanteItemRepository.saveAll(items);
-
-            Pago pago = new Pago();
-            pago.setFechaPago(fecha);
-            pago.setIdPedido(pedido.getId());
-            pago.setFormaPago(crearDto.getFormaPago());
-            pago.setValor(pedido.getTotal());
-            pago.setDescripcion("Pago de " + tipo.getDescripcion() + " numero " + pedido.getNumeroComprobante());
-
-            //Guardo el pago del pedido
-            pagoRepository.save(pago);
-
-            return pedido;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        // Rellenar los HashMap con los valores correspondientes
+        for (Producto producto : originales) {
+            idPrecioMap.put(producto.getId(), comprobante.getPrecio(producto));
+            idStockMap.put(producto.getId(), producto.getStock());
         }
+        //Guardo los productos
+        List<Producto> productosGuardados = productoService.createProductos(comprobante, crearDto.getProductos());
+
+        Optional<Cliente> proveedor = Optional.empty();
+        if (comprobante.checkUsuarioExistente()) {
+            proveedor = clienteService.findByDni(comprobante.getIdUsuario(productosGuardados.get(0)));
+        }
+        int dni = proveedor.map(Cliente::getDni).orElseGet(crearDto::getDni);
+
+        Pedido pedido = new Pedido();
+        pedido.setTipoPedido(tipo.getCodigo());
+        comprobante.setEstado(pedido);
+        pedido.setConSena(true);
+        pedido.setFechaPedido(fecha);
+        pedido.setTotal(comprobante.calcularTotal(crearDto.getTotal()));
+        pedido.setEstadoEnvio(EstadoPedido.ENVIADO.getCodigo());
+        pedido.setDniCliente(dni);
+
+        Numeracion numerador = generarNumeroComprobante(pedido);
+        pedido.setNumeroComprobante(formatearNumero(numerador.getNumeroComprobante()));
+        pedido.setDescripcion("Comprobante generado por "+tipo.getDescripcion() + " numero "+pedido.getNumeroComprobante());
+
+        //Actualizo el numero de comprobante
+        numerador.setNumeroComprobante(numerador.getNumeroComprobante() + 1);
+        numeracionRepository.save(numerador);
+
+        //Guardo el pedido
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);
+        List<ComprobanteItem> items = new ArrayList<>();
+        productosGuardados.forEach(producto -> {
+            //Actualizar el historico de cada Comprobante
+            ComprobanteItem comprobanteItem = new ComprobanteItem();
+            comprobanteItem.setIdPedido(pedidoGuardado.getId());
+            comprobanteItem.setStock(producto.getStock());
+            comprobanteItem.setIdProducto(producto.getId());
+            Optional<Producto> existente = originales.stream().filter(producto1 -> Objects.equals(producto.getId(), producto1.getId())).findFirst();
+            comprobanteItem.setPrecio(producto.getPrecioCompra());
+            existente.ifPresent(value -> comprobanteItem.setPrecio(idPrecioMap.get(existente.get().getId())));
+            comprobanteItem.setStock(producto.getStock());
+            existente.ifPresent(value -> comprobanteItem.setStock(idStockMap.get(existente.get().getId())));
+            items.add(comprobanteItem);
+        });
+        //Guardo los items de cada pedido
+        comprobanteItemRepository.saveAll(items);
+
+        Pago pago = new Pago();
+        pago.setFechaPago(fecha);
+        pago.setIdPedido(pedido.getId());
+        pago.setFormaPago(crearDto.getFormaPago());
+        pago.setValor(pedido.getTotal());
+        pago.setDescripcion("Pago de " + tipo.getDescripcion() + " numero " + pedido.getNumeroComprobante());
+
+        //Guardo el pago del pedido
+        pagoRepository.save(pago);
+
+        return pedido;
     }
     private String formatearNumero(int numero) {
         return String.format("%08d", numero);

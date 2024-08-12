@@ -106,7 +106,7 @@ export class GenerarComprobanteComponent implements OnInit{
                 this.activeModal.close(res);
                 //this.readonly = false;
               }, (error) => {
-                this.confirmarService.confirm('Error', error.message, true, 'Aceptar', 'Cancelar');
+                this.confirmarService.confirm('Error', error.error.message, true, 'Aceptar', 'Cancelar');
               })
             }
           })

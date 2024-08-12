@@ -3,6 +3,7 @@ package org.example.baboobackend.comprobante;
 import org.example.baboobackend.comprobante.calculador.Calculador;
 import org.example.baboobackend.comprobante.calculador.Resta;
 import org.example.baboobackend.comprobante.calculador.Suma;
+import org.example.baboobackend.config.exceptions.StockException;
 import org.example.baboobackend.entities.Cliente;
 import org.example.baboobackend.entities.Pedido;
 import org.example.baboobackend.entities.Producto;
@@ -39,6 +40,10 @@ public class OrdenDeVenta extends Comprobante {
         if (optExistente.isPresent()) {
             final Producto prodExistente = optExistente.get();
             int nuevoStock = this.calcularStock(prodExistente.getStock(), newProd.getStock());
+
+            if (nuevoStock < 0) {
+                throw new StockException("El stock no puede ser negativo para el producto" + newProd.getNombre());
+            }
             newProd.setIdProveedor(prodExistente.getIdProveedor());
             newProd.setStock(nuevoStock);
             newProd.setPrecioCompra(prodExistente.getPrecioCompra());

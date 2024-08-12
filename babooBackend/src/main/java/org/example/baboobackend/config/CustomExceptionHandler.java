@@ -1,5 +1,6 @@
 package org.example.baboobackend.config;
 
+import org.example.baboobackend.config.exceptions.StockException;
 import org.example.baboobackend.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,12 @@ public class CustomExceptionHandler {
     public final ResponseEntity<ApiResponse> handleIllegalArgumentException(RuntimeException ex, WebRequest request) {
         ApiResponse errorResponse = new ApiResponse("Dato Incorrecto", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(StockException.class)
+    public final ResponseEntity<ApiResponse> handleStockException(StockException ex, WebRequest request) {
+        ApiResponse errorResponse = new ApiResponse("Error de generacion", ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.EXPECTATION_FAILED);
     }
 
     @ExceptionHandler(Exception.class)
