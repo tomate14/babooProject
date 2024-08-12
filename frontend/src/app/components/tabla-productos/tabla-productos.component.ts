@@ -43,29 +43,33 @@ export class TablaProductoComponent {
     );
   }
 
-  crearProducto(): void {
-    /*const cliente = undefined;
-    this.crearProductoService.crearProducto(cliente)
-    .then((cliente) => {
-        if(cliente){
-          this.limpiar();
+  imprimirComprobante(producto: Producto) {
+    if (producto.id) {
+      this.productosService.getCodigoBarraPDF(producto.id).subscribe((res: any) => {
+        const url = window.URL.createObjectURL(res);
+        const newWindow = window.open();
+
+        const rows = 4; // Número de filas de imágenes
+        const cols = 4; // Número de columnas de imágenes
+
+        let content = `<html><head><style>
+          body { margin: 0; }
+          .grid { display: grid; grid-template-columns: repeat(${cols}, 1fr); grid-gap: 10px; }
+          img { width: 100%; height: auto; }
+        </style></head><body>`;
+        
+        content += '<div class="grid">';
+        for (let i = 0; i < rows * cols; i++) {
+          content += `<div><img src="${url}" alt="Código de Barras" /></div>`;
         }
-    });*/
+        content += '</div></body></html>';
+
+        newWindow?.document.write(content);
+        newWindow?.document.close();
+      })
+    }
   }
 
-  /*verPedidos(cliente: Producto): void {
-    this.pedidosService.getByDniProducto(cliente.dni).subscribe((res) => {
-      this.listaPedidosService.crearLista(cliente.dni, res).then((confirmed) => {
-        if(confirmed){
-          console.log("Listado")
-        }
-      });
-      // Lógica para ver detalles del cliente
-      console.log('Pedidos por cliente:', res);
-    }, (error) => {
-      this.confirmarService.confirm("Producto sin pedidos", error.error.message, true,"Ok", "No");
-    })    
-  }*/
   editarProducto(producto:Producto) {
     this.crearProductoService.abrirProducto(producto)
     .then((producto:Producto)  => {

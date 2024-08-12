@@ -32,4 +32,10 @@ export class ProductoService {
   public updateProducto(producto:Producto): Observable<Producto> {
     return this.httpClient.put<Producto>(`http://127.0.0.1:8080/producto`,producto);    
   }
+  
+  public getCodigoBarraPDF(idProducto:number): any {
+    return this.httpClient.get(`http://127.0.0.1:8080/producto/codigo-barra?idProducto=${idProducto}`, {
+        responseType: 'blob', // Especificar que la respuesta es un Blob
+    });
+  }
 }

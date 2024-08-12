@@ -1,6 +1,5 @@
 <div class="modal-header">
-    <h4 class="modal-title">Alta Usuario</h4>
-    <p class="modal-title">Usar dni para cliente y cuit para proveedor</p>
+    <h4 class="modal-title">Editar producto</h4>
     <button type="button" class="close" aria-label="Close" (click)="cerrar()">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -9,7 +8,7 @@
     <form [formGroup]="myForm" (ngSubmit)="onSubmit()" class="container needs-validation">
         <div class="row">
             <div class="col-md-6 form-group">
-                <label for="idProveedor">Tipo</label>
+                <label for="idProveedor">Proveedor</label>
                 <select id="idProveedor" class="form-select" formControlName="idProveedor">
                   <option *ngFor="let proveedor of proveedores" [value]="proveedor.dni">{{proveedor.nombre}}</option>
                 </select>

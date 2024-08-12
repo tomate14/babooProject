@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface CajaRepository extends JpaRepository<Caja, Integer> {
-    @Query("SELECT c FROM Caja c WHERE c.fecha BETWEEN :startDate AND :endDate")
+    @Query("SELECT c FROM Caja c WHERE c.fecha BETWEEN :startDate AND :endDate ORDER BY c.fecha ASC")
     List<Caja> findByFechaBetween(@Param("startDate") String startDate, @Param("endDate") String endDate);
     Caja findFirstByOrderByFechaDesc();
     Caja findTopByOrderByFechaDesc();
