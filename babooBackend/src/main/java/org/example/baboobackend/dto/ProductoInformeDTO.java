@@ -13,5 +13,11 @@ public class ProductoInformeDTO extends Producto {
         this.stock = stock;
         this.precio = precio;
     }
+    public ProductoInformeDTO(String nombre, int stock, double precio, String codigoBarra) {
+        this.nombre = nombre;
+        this.stock = stock;
+        this.precio = precio;
+        this.codigoBarra = codigoBarra;
+    }
 
 }

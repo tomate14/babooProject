@@ -10,13 +10,11 @@ import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import org.example.baboobackend.comprobante.Comprobante;
 import org.example.baboobackend.daos.ClienteRepository;
-import org.example.baboobackend.daos.NumeracionRepository;
+import org.example.baboobackend.daos.ComprobanteItemRepository;
 import org.example.baboobackend.daos.ProductoRepository;
+import org.example.baboobackend.dto.ProductoInformeDTO;
 import org.example.baboobackend.entities.Cliente;
-import org.example.baboobackend.entities.Pedido;
 import org.example.baboobackend.entities.Producto;
-import org.example.baboobackend.enumerados.TipoUsuario;
-import org.example.baboobackend.service.PedidoService;
 import org.example.baboobackend.service.ProductoService;
 import org.krysalis.barcode4j.impl.upcean.EAN13Bean;
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
@@ -40,6 +38,8 @@ public class ProductoServiceImpl implements ProductoService {
     private EntityManager entityManager;
     @Autowired
     private ClienteRepository clienteRepository;
+    @Autowired
+    private ComprobanteItemRepository comprobanteItemRepository;
 
     public List<Producto> getAllProductos(Map<String, String> queryParams) {
         Map<String, Object> filtros = new HashMap<>();
@@ -143,6 +143,11 @@ public class ProductoServiceImpl implements ProductoService {
             return baos.toByteArray();
         }
         throw new RuntimeException("No se pudo generar el codigo de barra "+idProducto);
+    }
+
+    @Override
+    public List<ProductoInformeDTO> getProductoByIdPedido(Integer idPedido) {
+        return productoRepository.getProductosComprobante(idPedido);
     }
 
     private int calculateCheckDigit(String barcode) {

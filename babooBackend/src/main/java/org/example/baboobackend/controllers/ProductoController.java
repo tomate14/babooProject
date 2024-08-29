@@ -1,5 +1,6 @@
 package org.example.baboobackend.controllers;
 
+import org.example.baboobackend.dto.ProductoInformeDTO;
 import org.example.baboobackend.entities.Pedido;
 import org.example.baboobackend.entities.Producto;
 import org.example.baboobackend.service.ProductoService;
@@ -47,6 +48,11 @@ public class ProductoController {
     public ResponseEntity<Producto> getProductoById(@PathVariable Integer id) {
         Optional<Producto> producto = productoService.getProductoById(id);
         return producto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/detalle/{idPedido}")
+    public ResponseEntity<List<ProductoInformeDTO>> getProductoByIdPedido(@PathVariable Integer idPedido) {
+        return ResponseEntity.ok(productoService.getProductoByIdPedido(idPedido));
     }
 
     @PutMapping

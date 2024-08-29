@@ -21,7 +21,7 @@ public class Producto {
     protected String nombre;
 
     @Column(name = "codigo_barra")
-    private String codigoBarra;
+    protected String codigoBarra;
 
     @Column(name = "precio_compra", nullable = false)
     private Integer precioCompra;

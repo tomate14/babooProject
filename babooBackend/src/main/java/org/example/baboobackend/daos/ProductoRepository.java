@@ -16,5 +16,11 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
             "WHERE PE.id = :id " +
             "ORDER BY CI.idPedido ASC")
     List<ProductoInformeDTO> getProductosInforme(int id);
+    @Query("SELECT new org.example.baboobackend.dto.ProductoInformeDTO(P.nombre, CI.stock, CI.precio, P.codigoBarra)" +
+            "FROM ComprobanteItem CI " +
+            "INNER JOIN Producto P ON P.id = CI.idProducto " +
+            "WHERE CI.idPedido = :idPedido " +
+            "ORDER BY CI.idPedido ASC")
+    List<ProductoInformeDTO> getProductosComprobante(int idPedido);
 }
 

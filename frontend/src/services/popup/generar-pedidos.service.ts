@@ -12,14 +12,14 @@ export class CrearPedidoService {
   constructor(private modalService: NgbModal) { }
 
   //Popup de confirmacion
-  public crearPedido(tipoComprobante:string): Promise<any> {    
+  public crearPedido(tipoComprobante:string, readonly:boolean, pedido:any): Promise<any> {    
     const modalOptions: NgbModalOptions = {
       size: 'xl' // Establecer el tamaño del modal como grande (100% de la pantalla vertical)
     };
 
     let comprobante = null;
     let title = "Generar Pedido";
-    
+
     if (tipoComprobante === 'ORC' || tipoComprobante === 'ORV' || tipoComprobante === 'NDC') {
       comprobante = GenerarComprobanteComponent;
       title = "Generar "+tipoComprobante;
@@ -30,6 +30,8 @@ export class CrearPedidoService {
 
     modalRef.componentInstance.title = title;
     modalRef.componentInstance.tipoComprobante = tipoComprobante;
+    modalRef.componentInstance.readonly = readonly;
+    modalRef.componentInstance.pedido = pedido;
     return modalRef.result;
   }
 }

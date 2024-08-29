@@ -132,7 +132,7 @@ export class TablaPedidoComponent implements OnInit {
   crearPedido() {
     const tipoCompro = this.tipoDePedido.find((tipo)=> tipo.value === this.tipoPedido);
     const sigla = tipoCompro?.sigla || 'PED';
-    this.crearPedidoModal.crearPedido(sigla).then((res)=> {
+    this.crearPedidoModal.crearPedido(sigla, false, null).then((res)=> {
       if(res){
         this.pedidos.unshift(res);
       }
@@ -177,7 +177,7 @@ export class TablaPedidoComponent implements OnInit {
           }
         }
       }
-    })
+    })    
   }
 
   notificarDeuda(pedido: Pedido) {
@@ -209,6 +209,16 @@ export class TablaPedidoComponent implements OnInit {
         window.open(url);
       });
     }
+  }
+
+  verPedido(pedido: Pedido) {
+    const tipoCompro = this.tipoDePedido.find((tipo)=> tipo.value === this.tipoPedido);
+    if ((tipoCompro) && (this.tipoPedido === 3 || this.tipoPedido === 4 || this.tipoPedido === 5)) {
+      const sigla = tipoCompro.sigla || 'PED';
+      this.crearPedidoModal.crearPedido(sigla, true, pedido).then(res => {
+        console.log("asd");
+      });
+    } 
   }
 
   private enviarWP(res:DeudaPedido) {

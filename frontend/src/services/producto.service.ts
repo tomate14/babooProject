@@ -17,6 +17,10 @@ export class ProductoService {
       return this.httpClient.get<Producto>(`http://127.0.0.1:8080/producto?id=${id}`);
   }
 
+  public getProductoByIdPedido(idPedido:number): Observable<Producto[]> {
+    return this.httpClient.get<Producto[]>(`http://127.0.0.1:8080/producto/detalle/${idPedido}`);
+  }
+
   public getByParams(params:string[]): Observable<Producto[]> {
     let url = `http://127.0.0.1:8080/producto`;
     if (params.length > 0) {

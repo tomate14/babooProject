@@ -13,6 +13,7 @@ import { FormaDePago, formaDePago } from '../../../clases/constantes/formaPago';
 import { ConfirmarComprobanteService } from '../../../services/popup/confirmarComprobante.setvice';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TipoPedido, tipoDePedido } from '../../../clases/constantes/cuentaCorriente';
+import { Pedido } from '../../../clases/dominio/pedido';
 
 @Component({
   selector: 'app-generar-comprobante',
@@ -33,10 +34,11 @@ export class GenerarComprobanteComponent implements OnInit{
   proveedor:Cliente | undefined;
   myForm: FormGroup;
   myFormHeader: FormGroup;
-  readonly:boolean = false;
   formaDePago:FormaDePago[] = [];
   selectedFormaDePago:number = 1;
   tipoDePedido:TipoPedido[] = [];
+  @Input() readonly:boolean = false;
+  @Input() pedido:Pedido | undefined;
   @Input() title:string = "";
   @Input() tipoComprobante:string = "";
   constructor(private route: ActivatedRoute, private clienteService: ClienteService, private fb: FormBuilder,
@@ -58,16 +60,23 @@ export class GenerarComprobanteComponent implements OnInit{
     });
   }
   ngOnInit(): void {
-    if (this.tipoComprobante === 'ORC') {
-      this.tipoUsuario = 2;
-      this.clienteService.getClientes(this.tipoUsuario).subscribe(res => {
-        this.usuarios = res;
+    if (this.readonly && this.pedido && this.pedido.id) {
+      const id = +this.pedido.id;
+      this.productoService.getProductoByIdPedido(id).subscribe(res => {
+        this.productos = res;
       })
-    } else /*if (this.tipoComprobante === 'ORV')*/ {
-      this.tipoUsuario = 0;
-      this.productoService.getByParams([]).subscribe(res => {
-        this.productosProveedor = res;
-      })
+    } else {
+      if (this.tipoComprobante === 'ORC') {
+        this.tipoUsuario = 2;
+        this.clienteService.getClientes(this.tipoUsuario).subscribe(res => {
+          this.usuarios = res;
+        })
+      } else /*if (this.tipoComprobante === 'ORV')*/ {
+        this.tipoUsuario = 0;
+        this.productoService.getByParams([]).subscribe(res => {
+          this.productosProveedor = res;
+        })
+      }
     }
   }
   
@@ -215,9 +224,9 @@ export class GenerarComprobanteComponent implements OnInit{
 
   getPrecioProducto(producto: Producto): any {
     if (this.tipoComprobante === 'ORC') {
-      return producto.precioCompra;
+      return producto.precioCompra || producto.precio;
     } else if (this.tipoComprobante === 'ORV' || this.tipoComprobante === 'NDC') {
-      return producto.precioVenta;
+      return producto.precioVenta || producto.precio;
     }
   }
 

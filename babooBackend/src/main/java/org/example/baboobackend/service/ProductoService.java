@@ -1,6 +1,7 @@
 package org.example.baboobackend.service;
 
 import org.example.baboobackend.comprobante.Comprobante;
+import org.example.baboobackend.dto.ProductoInformeDTO;
 import org.example.baboobackend.entities.Producto;
 
 import java.io.IOException;
@@ -16,4 +17,6 @@ public interface ProductoService {
     void deleteProducto(Integer id);
     String getCodigoDeBarra(int idProducto);
     byte[] generateBarcode(int idProducto) throws IOException;
+
+    List<ProductoInformeDTO> getProductoByIdPedido(Integer idPedido);
 }

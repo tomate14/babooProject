@@ -7,4 +7,5 @@ export interface Producto {
     idProveedor:number;
     stock:number;
     nombreProveedor?:string;
+    precio?:number;
 }
