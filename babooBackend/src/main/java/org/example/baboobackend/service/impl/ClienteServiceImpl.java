@@ -117,6 +117,12 @@ public class ClienteServiceImpl implements ClienteService {
                 throw new IllegalArgumentException("El teléfono no puede estar vacío");
             }
 
+            if (cliente.getPorcentajeRemarcar() != null && cliente.getPorcentajeRemarcar() > 0) {
+                existingClient.setPorcentajeRemarcar(cliente.getPorcentajeRemarcar());
+            } else {
+                throw new IllegalArgumentException("El porcentaje no es valido");
+            }
+
             if (cliente.getEmail() != null && !cliente.getEmail().isEmpty() && cliente.getEmail().contains("@")) {
                 existingClient.setEmail(cliente.getEmail());
             } else {

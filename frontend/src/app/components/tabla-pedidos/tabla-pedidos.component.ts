@@ -49,6 +49,7 @@ export class TablaPedidoComponent implements OnInit {
   tipoDePedido:TipoPedido[] = [];
   tipoPedido:number= 1;
   estadoDeEnvio:EstadoEnvio[] = [];
+  titulo: string = "";
 
   constructor(private route: ActivatedRoute, private fb: FormBuilder, private pedidosService: PedidosService,
     private pagosService: PagosService,
@@ -59,12 +60,17 @@ export class TablaPedidoComponent implements OnInit {
     });
     this.filterForm = this.fb.group({});
     this.tipoDePedido = tipoDePedido;
+    
   }
 
   ngOnInit(): void {
 
     this.filterForm = this.fb.group(defaultFormObject);
     this.estadoDeEnvio = estadoDeEnvio;
+    const itemTipoPedido = this.tipoDePedido.find((tipo)=> tipo.value === this.tipoPedido);
+    if (itemTipoPedido) {
+      this.titulo = itemTipoPedido.viewValue;
+    }
     this.pedidosService.getPedidosPorTipo(this.tipoPedido).subscribe(
       (data: Pedido[]) => {
         this.pedidos = data;

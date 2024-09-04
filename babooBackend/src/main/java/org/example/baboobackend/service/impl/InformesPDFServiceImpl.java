@@ -142,8 +142,8 @@ public class InformesPDFServiceImpl implements InformesPDFService {
 
     private void addFooter(Document document, Pedido pedido, PdfFont montserrat) {
         agregarSeparador(document, 0.3f);
-
-        Paragraph footer = new Paragraph("Total: $ "+numberFormat.format(pedido.getTotal()))
+        int total = pedido.getTotal() < 0 ? -pedido.getTotal() : pedido.getTotal();
+        Paragraph footer = new Paragraph("Total: $ "+numberFormat.format(total))
                 .setFontSize(12)
                 .setFont(montserrat)
                 .setWidth(UnitValue.createPercentValue(100))

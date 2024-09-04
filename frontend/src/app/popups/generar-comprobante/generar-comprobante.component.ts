@@ -14,6 +14,7 @@ import { ConfirmarComprobanteService } from '../../../services/popup/confirmarCo
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TipoPedido, tipoDePedido } from '../../../clases/constantes/cuentaCorriente';
 import { Pedido } from '../../../clases/dominio/pedido';
+import { EditarItemComprobanteService } from '../../../services/popup/editarItemComprobante.service';
 
 @Component({
   selector: 'app-generar-comprobante',
@@ -43,7 +44,8 @@ export class GenerarComprobanteComponent implements OnInit{
   @Input() tipoComprobante:string = "";
   constructor(private route: ActivatedRoute, private clienteService: ClienteService, private fb: FormBuilder,
     private productoService:ProductoService, private confirmarService:ConfirmarService, private pedidoService: PedidosService,
-    private confirmarComprobanteService: ConfirmarComprobanteService, private activeModal: NgbActiveModal
+    private confirmarComprobanteService: ConfirmarComprobanteService, private activeModal: NgbActiveModal,
+    private editarItemComprobanteService: EditarItemComprobanteService
   ) {
     this.formaDePago = formaDePago;
     this.tipoDePedido = tipoDePedido;
@@ -237,8 +239,24 @@ export class GenerarComprobanteComponent implements OnInit{
       producto.precioVenta = +value.precio;
     }
   }
-  editarProducto(_t58: Producto) {
-    throw new Error('Method not implemented.');
+  editarProducto(producto: Producto) {
+    this.editarItemComprobanteService.editarItem(producto).then((res => {
+      if (res) {
+        const stockViejo = producto.stock;
+        producto.stock = res.stock;
+        try {
+          if (this.stockValido(producto)) {
+            if (this.tipoComprobante === 'ORC') {
+              producto.precioCompra = res.precio;
+            } else if (this.tipoComprobante === 'ORV' || this.tipoComprobante === 'NDC') {
+              producto.precioVenta = res.precio;
+            }
+          }  
+        } catch (error) {
+          producto.stock = stockViejo;
+        }
+      }
+    }));
   }
 }
 

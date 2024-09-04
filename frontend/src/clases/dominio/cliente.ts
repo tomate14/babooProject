@@ -10,4 +10,5 @@ export interface Cliente {
     fechaAlta: string;
     esDeudor?:boolean;
     tipoUsuario?:number;
+    porcentajeRemarcar?:number;
 }

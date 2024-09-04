@@ -1,4 +1,11 @@
 <div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h2 >{{titulo}}</h2>
+    </div>
+    <hr/>
+  </div>
+
   <div class="row mb-3">
     <div class="col-11">
       <button class="btn btn-dark" (click)="isCollapsed = !isCollapsed">{{isCollapsed ? 'Mostrar filtros' : 'Ocultar filtros'}}</button>
@@ -9,7 +16,7 @@
   </div>
 
   <div *ngIf="!isCollapsed">
-    <form [formGroup]="filterForm" class="container filter-form">
+    <form [formGroup]="filterForm" class="filter-form">
       <div class="row">
         <div class="col-4 form-group">
           <div class="form-group">

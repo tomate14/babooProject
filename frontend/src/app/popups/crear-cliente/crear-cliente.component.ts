@@ -30,7 +30,8 @@ export class CrearClienteComponent {
       direccion: [this.cliente ? this.cliente.direccion : null, Validators.required],
       telefono: [this.cliente ? this.cliente.telefono : null, Validators.required],
       cuit: [this.cliente ? this.cliente.cuit : null],
-      fechaNacimiento: [this.cliente ? this.cliente.fechaNacimiento : null]
+      fechaNacimiento: [this.cliente ? this.cliente.fechaNacimiento : null],
+      porcentajeRemarcar: [this.cliente ? this.cliente.porcentajeRemarcar : null],
     }
 
     this.myForm = this.fb.group(validator);
@@ -50,7 +51,8 @@ export class CrearClienteComponent {
         email: this.myForm.value.email,
         cuit: this.myForm.value.cuit,
         tipoUsuario: +this.myForm.value.tipoUsuario,
-        fechaAlta: nowConLuxonATimezoneArgentina()
+        fechaAlta: nowConLuxonATimezoneArgentina(),
+        porcentajeRemarcar: +this.myForm.value.porcentajeRemarcar
       }
       if (this.cliente) {
         this.clienteService.updateCliente(cliente).subscribe((res:Cliente) => {
