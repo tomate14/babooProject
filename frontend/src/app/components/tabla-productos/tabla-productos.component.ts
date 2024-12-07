@@ -70,6 +70,22 @@ export class TablaProductoComponent {
     }
   }
 
+  imprimirEtiqueta(producto: Producto) {
+    if (producto.id) {
+      this.productosService.getEtiquetaPDF(producto.id).subscribe((res: any) => {
+        const url = window.URL.createObjectURL(res); // Crear URL para el Blob
+
+        // Abrir una nueva ventana y mostrar el PDF usando iframe
+        const newWindow = window.open();
+        if (newWindow) {
+          const iframe = `<iframe width="100%" height="100%" src="${url}" frameborder="0"></iframe>`;
+          newWindow.document.write(iframe); // Escribir el iframe con el PDF
+          newWindow.document.close();
+        }
+      })
+    }
+  }
+
   editarProducto(producto:Producto) {
     this.crearProductoService.abrirProducto(producto)
     .then((producto:Producto)  => {
