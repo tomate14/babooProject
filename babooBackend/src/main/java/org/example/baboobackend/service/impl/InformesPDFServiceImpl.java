@@ -1,4 +1,5 @@
 package org.example.baboobackend.service.impl;
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.font.PdfFont;
@@ -11,8 +12,10 @@ import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Canvas;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.*;
+import org.krysalis.barcode4j.impl.upcean.EAN13Bean;
 
 import com.itextpdf.layout.properties.HorizontalAlignment;
 import com.itextpdf.layout.properties.TextAlignment;
@@ -47,9 +50,17 @@ public class InformesPDFServiceImpl implements InformesPDFService {
             PdfWriter writer = new PdfWriter(out);
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc);
+            PdfFont montserrat;
+            try {
+                String fontPath = "src/main/resources/fonts/Montserrat-Regular.ttf";
+                montserrat = PdfFontFactory.createFont(
+                        getClass().getClassLoader().getResource(fontPath).getPath(),
+                        PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED
+                );
+            } catch(Exception e) {
+                montserrat = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            }
 
-            String fontPath = "src/main/resources/fonts/Montserrat-Regular.ttf";
-            PdfFont montserrat = PdfFontFactory.createFont(fontPath, "UTF-8");
 
             Paragraph date = new Paragraph("Tandil, "+new SimpleDateFormat("dd MMM yyyy").format(new Date()))
                     .setWidth(UnitValue.createPercentValue(100))
@@ -103,7 +114,9 @@ public class InformesPDFServiceImpl implements InformesPDFService {
     private void addTablaProductos(Document document, List<ProductoInformeDTO> productos, PdfFont montserrat) throws IOException {
 
         // Añadir tabla de productos
-        Table table = new Table(4);
+        // Crear una tabla con proporciones específicas para las columnas
+        float[] columnWidths = {60f, 8f, 16f, 16f};
+        Table table = new Table(UnitValue.createPercentArray(columnWidths));
         table.setWidth(UnitValue.createPercentValue(100));
 
         // Encabezado de la tabla con borde
@@ -112,22 +125,31 @@ public class InformesPDFServiceImpl implements InformesPDFService {
         Cell headerPrecioCell = generarCeldaSinBordes();
         Cell headerTotalCell = generarCeldaSinBordes();
 
-        table.addHeaderCell(headerProductoCell.add(new Paragraph("Producto").setFont(montserrat).setBold().setFontSize(16f)));
-        table.addHeaderCell(headerCantidadCell.add(new Paragraph("Cantidad").setFont(montserrat).setBold().setFontSize(16f)));
-        table.addHeaderCell(headerPrecioCell.add(new Paragraph("Precio").setFont(montserrat).setBold().setFontSize(16f)));
-        table.addHeaderCell(headerTotalCell.add(new Paragraph("Total").setFont(montserrat).setBold().setFontSize(16f)));
+        table.addHeaderCell(headerProductoCell.add(new Paragraph("Producto").setFont(montserrat).setBold().setFontSize(14f)));
+        table.addHeaderCell(headerCantidadCell.add(new Paragraph("Unidad").setFont(montserrat).setBold().setFontSize(14f)).setTextAlignment(TextAlignment.RIGHT));
+        table.addHeaderCell(headerPrecioCell.add(new Paragraph("Precio").setFont(montserrat).setBold().setFontSize(14f)).setTextAlignment(TextAlignment.RIGHT));
+        table.addHeaderCell(headerTotalCell.add(new Paragraph("Total").setFont(montserrat).setBold().setFontSize(14f)).setTextAlignment(TextAlignment.RIGHT));
 
         // Agregar filas a la tabla (simulación de productos)
         for (ProductoInformeDTO producto: productos) {
+            // Línea separadora como nueva fila
+            Cell separatorCell = new Cell(1, 4); // Fila que abarca 4 columnas
+            separatorCell.setBorderBottom(new SolidBorder(ColorConstants.BLACK, 0.5f)); // Línea negra de 1px de espesor
+            separatorCell.setBorderTop(Border.NO_BORDER);
+            separatorCell.setBorderLeft(Border.NO_BORDER);
+            separatorCell.setBorderRight(Border.NO_BORDER);
+            table.addCell(separatorCell);
+
             Cell nombreCell = generarCeldaSinBordes();
             Cell stockCell = generarCeldaSinBordes();
             Cell precioCell = generarCeldaSinBordes();
             Cell totalCell = generarCeldaSinBordes();
             table.addCell(nombreCell.add(createParagraph(producto.getNombre().toUpperCase(), montserrat, 10)));
-            table.addCell(stockCell.add(createParagraph(String.valueOf(producto.getStock()), montserrat, 10)));
-            table.addCell(precioCell.add(createParagraph("$ "+numberFormat.format(producto.getPrecio()), montserrat, 10)));
+            table.addCell(stockCell.add(createParagraph(String.valueOf(producto.getStock()), montserrat, 10)).setTextAlignment(TextAlignment.RIGHT));
+            table.addCell(precioCell.add(createParagraph("$ "+numberFormat.format(producto.getPrecio()), montserrat, 10)).setTextAlignment(TextAlignment.RIGHT));
             int total = (int) (producto.getPrecio() * producto.getStock());
-            table.addCell(totalCell.add(createParagraph("$ "+numberFormat.format(total), montserrat, 10)));
+            table.addCell(totalCell.add(createParagraph("$ "+numberFormat.format(total), montserrat, 10)).setTextAlignment(TextAlignment.RIGHT));
+
         }
 
         Cell emptyCell = generarCeldaSinBordes();
@@ -162,7 +184,9 @@ public class InformesPDFServiceImpl implements InformesPDFService {
 
     private void agregarFirmaHoja(Document document) throws MalformedURLException {
         // Cargar la imagen desde la ruta
-        Image logo = new Image(ImageDataFactory.create("src/main/resources/templates/logo.png"));
+        Image logo = new Image(ImageDataFactory.create(
+                getClass().getClassLoader().getResource("templates/logo.png").toString()
+        ));
         logo.setWidth(300);
         logo.setHeight(100);
 

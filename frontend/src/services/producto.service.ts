@@ -43,4 +43,10 @@ export class ProductoService {
         responseType: 'blob', // Especificar que la respuesta es un Blob
     });
   }
+
+  public getEtiquetaPDF(idProducto:number): any {
+    return this.httpClient.get(`${BACKEND_URL}/informes/${idProducto}`, {
+        responseType: 'blob', // Especificar que la respuesta es un Blob
+    });
+  }
 }
