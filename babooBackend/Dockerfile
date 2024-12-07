@@ -5,7 +5,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copiar el archivo JAR de la aplicación al contenedor
-COPY target/baboo-java-app.jar /app/baboo-java-app.jar
+COPY target/babooBackend-0.0.1-SNAPSHOT.jar /app/baboo-java-app.jar
 
 # Exponer el puerto en el que la aplicación escucha
 EXPOSE 8080
