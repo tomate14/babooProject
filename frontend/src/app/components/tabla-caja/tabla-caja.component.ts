@@ -81,7 +81,7 @@ export class TablaCajaComponent implements OnInit{
   }
 
   onSubmit() {  
-    const pagosSinPedidos = this.pagos.filter((p)=> p.idPedido == '-1' || p.idPedido == '-2' || p.idPedido == '-3')  
+    const pagosSinPedidos = this.pagos.filter((p)=> p.idPedido == -1 || p.idPedido == -2 || p.idPedido == -3)  
     if (pagosSinPedidos && pagosSinPedidos.length === 0) {
       this.checkearCajasSinCerrar();
     } else {
@@ -92,7 +92,7 @@ export class TablaCajaComponent implements OnInit{
   editarPago(pago: Pago) {
     this.editarPagoService.editarPago(pago).then((pago:Pago) => {
       if (pago) {
-        if (pago.idPedido !== '-2' && pago.idPedido !== '-3') {
+        if (pago.idPedido !== -2 && pago.idPedido !== -3) {
           const index = this.pagos.findIndex(c => c.id === pago.id);
           if (index !== -1) {
               this.pagos[index] = pago;
@@ -120,7 +120,7 @@ export class TablaCajaComponent implements OnInit{
         const pagoId = pago.id as unknown as string;
         this.pagosServices.deletePagoByIdPago(pagoId).subscribe((res)=> {
 
-          if (pago.idPedido !== '-2' && pago.idPedido !== '-3') {
+          if (pago.idPedido !== -2 && pago.idPedido !== -3) {
             let index = this.pagos.findIndex(item => item.id === pago.id);
   
             if (index > -1) {
@@ -149,8 +149,8 @@ export class TablaCajaComponent implements OnInit{
     if (this.pagos.length === 0) {
       this.pagosServices.getCajaByDate(fechaDesde, fechaHasta).subscribe((res) => {
         //Separar pagos de retiros
-        this.pagos = res.filter((pago) => pago.idPedido !== '-2' && pago.idPedido !== '-3');
-        this.ingresosRetiros = res.filter((pago) => pago.idPedido === '-2' || pago.idPedido === '-3');
+        this.pagos = res.filter((pago) => pago.idPedido !== -2 && pago.idPedido !== -3);
+        this.ingresosRetiros = res.filter((pago) => pago.idPedido === -2 || pago.idPedido === -3);
         this.actualizarTotales();
       })
     } else {
@@ -159,14 +159,14 @@ export class TablaCajaComponent implements OnInit{
   }
   
   private actualizarTotalesPorPago(pago:Pago) {
-    if (pago.idPedido && (pago.idPedido !== '-2' && pago.idPedido !== '-3')) {
+    if (pago.idPedido && (pago.idPedido !== -2 && pago.idPedido !== -3)) {
       pago.formaPago ===  1 ? this.totalContado += pago.valor : null;
       pago.formaPago ===  2 ? this.totalTarjeta += pago.valor : null;
       pago.formaPago ===  3 ? this.totalDNI += pago.valor : null;
       pago.formaPago ===  4 ? this.totalTransferencia += pago.valor : null;
     } else {
-      pago.idPedido ===  '-2' ? this.totalIngresosCaja += pago.valor : null;
-      pago.idPedido ===  '-3' ? this.totalRetirosCaja += pago.valor : null;
+      pago.idPedido ===  -2 ? this.totalIngresosCaja += pago.valor : null;
+      pago.idPedido ===  -3 ? this.totalRetirosCaja += pago.valor : null;
     }
   }
 
@@ -222,7 +222,7 @@ export class TablaCajaComponent implements OnInit{
 }
   private checkearForm() {
     if (this.myForm.valid) {
-      const idPedido: string = tipoDePago[this.tipoBoton];
+      const idPedido: number = tipoDePago[this.tipoBoton];
       const pago: Pago = {
         idPedido: idPedido,
         fechaPago: nowConLuxonATimezoneArgentina(),
@@ -233,7 +233,7 @@ export class TablaCajaComponent implements OnInit{
       this.pagosServices.postPago(pago).subscribe((res) => {
         this.myForm.reset({descripcion: '',valor: null,formaDePago: 1});
         this.actualizarTotalesPorPago(pago);
-        if (idPedido === '-1') {
+        if (idPedido === -1) {
           this.pagos.unshift(res);
         } else {
           this.ingresosRetiros.unshift(res);

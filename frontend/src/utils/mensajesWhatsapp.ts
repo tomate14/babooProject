@@ -1,7 +1,7 @@
 import { DeudaPedido } from "../clases/dto/deudaPedido";
 import { formatearFechaDesdeUnIso } from "./dates";
 
-export function enviarMensajeAltaPedido(nombre:string, id:string, descripcion:string, entrega:number, saldo:number, telefono:string|undefined, numeroComprobante:string) {
+export function enviarMensajeAltaPedido(nombre:string, id:number, descripcion:string, entrega:number, saldo:number, telefono:string|undefined, numeroComprobante:string) {
     let body = `Hola ${nombre}. Confirmamos su pedido *_${numeroComprobante}_* con una fecha de entrega estimada de *_30 dias_* habiles aproximadamente.`;
     body = body + ` Aclaramos que el pedido puede sufrir atrasos por cuestiones de fuerza mayor.`;
     body = body + ` Asi mismo, tomamos como descripcion del producto: ${descripcion}.`;

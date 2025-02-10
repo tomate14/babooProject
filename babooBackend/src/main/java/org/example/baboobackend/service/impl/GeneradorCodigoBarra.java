@@ -30,7 +30,7 @@ public class GeneradorCodigoBarra {
 
         try {
             // Copiar a un archivo temporal para trabajar con PdfReader
-            Path tempTemplatePath = Files.createTempFile("etiqueta", ".pdf");
+            Path tempTemplatePath = Files.createTempFile("EtiquetasMultiples", ".pdf");
             Files.copy(templateStream, tempTemplatePath, StandardCopyOption.REPLACE_EXISTING);
 
             // Crear un ByteArrayOutputStream para generar el PDF en memoria
@@ -47,18 +47,27 @@ public class GeneradorCodigoBarra {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             javax.imageio.ImageIO.write(barcodeImage, "png", baos);
             ImageData barcodeImageData = ImageDataFactory.create(baos.toByteArray());
-
-            // Crear una instancia de Image para agregar al PDF
-            Image barcodeImageElement = new Image(barcodeImageData);
-
-            // Establecer la posición y tamaño del código de barras
-            barcodeImageElement.setFixedPosition(20, 160); // Ajustar coordenadas (X, Y)
-            barcodeImageElement.setWidth(40); // Ajustar ancho
-            barcodeImageElement.setHeight(20); // Ajustar alto
-
             // Agregar el código de barras a la primera página del PDF
             Document document = new Document(pdfDoc);
-            document.add(barcodeImageElement);
+            int bottom = 160;
+            for (int vertical = 0; vertical < 2; vertical++) {
+                int incrementarX = 17;
+                for (int i=0; i < 3; i++) {
+                    // Crear una instancia de Image para agregar al PDF
+                    Image barcodeImageElement = new Image(barcodeImageData);
+
+                    // Establecer la posición y tamaño del código de barras
+                    barcodeImageElement.setFixedPosition(incrementarX, bottom); // Ajustar coordenadas (X, Y)
+                    barcodeImageElement.setWidth(40); // Ajustar ancho
+                    barcodeImageElement.setHeight(20); // Ajustar alto
+                    document.add(barcodeImageElement);
+
+                    incrementarX = incrementarX + 144;
+                }
+                bottom = bottom - 140;
+            }
+
+
 
             pdfDoc.close();
 

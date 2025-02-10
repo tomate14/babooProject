@@ -13,7 +13,7 @@ export class PagosService {
 
   constructor(private httpClient: HttpClient) { }
 
-  public getPagoByIdPedido(idPedido:string): Observable<PagosPorPedido> {
+  public getPagoByIdPedido(idPedido:number): Observable<PagosPorPedido> {
       return this.httpClient.get<PagosPorPedido>(`${BACKEND_URL}/pago/${idPedido}`);
   }
 
