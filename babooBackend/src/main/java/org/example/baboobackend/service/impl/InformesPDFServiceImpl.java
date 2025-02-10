@@ -187,8 +187,8 @@ public class InformesPDFServiceImpl implements InformesPDFService {
         Image logo = new Image(ImageDataFactory.create(
                 getClass().getClassLoader().getResource("templates/logo.png").toString()
         ));
-        logo.setWidth(300);
-        logo.setHeight(100);
+        logo.setWidth(500);
+        logo.setHeight(90);
 
         Cell nuevaCelda = generarCeldaSinBordes();
         nuevaCelda.add(logo)
