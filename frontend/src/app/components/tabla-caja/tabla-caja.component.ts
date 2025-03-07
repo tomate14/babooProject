@@ -185,16 +185,27 @@ export class TablaCajaComponent implements OnInit{
     })
   }
 
-  private generarPromesaCierreCajaViejo(diferenciaDias:number) {
+  private generarPromesaCierreCajaViejo(diferenciaDias:number, res:any) {
     const fechaDesde = getPreviousDays(nowConLuxonATimezoneArgentina(),false,diferenciaDias);
     const fechaHasta = getPreviousDays(nowConLuxonATimezoneArgentina(),true,diferenciaDias);
-    return new Promise<void>((resolve,reject)=> {
-      this.cajaService.cierreCaja(fechaDesde, fechaHasta).subscribe((res) => {
-        resolve();
-      }, (error)=> {
-        reject();
+    if (fechaDesde !== res.fecha) {
+      return new Promise<void>((resolve,reject)=> {
+        this.cajaService.cierreCaja(fechaDesde, fechaHasta).subscribe((res) => {
+          resolve();
+        }, (error)=> {
+          if (error.status && error.status === 200) {
+            resolve();
+          } else {
+            reject();  
+          }          
+        })
       })
-    })
+    } else {
+      return new Promise<void>((resolve,reject)=> {        
+        resolve();        
+      })
+    }
+    
   }
   private checkearCajasSinCerrar(): void {
     this.cajaService.getUltimasCajasCerradas().subscribe((res)=> {
@@ -208,7 +219,7 @@ export class TablaCajaComponent implements OnInit{
           this.checkearForm();
         } else {
           for(let i=diferencia; i > 0; i--) {
-            promises.push(this.generarPromesaCierreCajaViejo(i));
+            promises.push(this.generarPromesaCierreCajaViejo(i, res));
           }
           Promise.all(promises).then((res)=> {
             this.checkearForm();
