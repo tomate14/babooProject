@@ -88,3 +88,18 @@ CREATE TABLE `TIPO_USUARIO` (
   `descripcion` varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
 );
+
+CREATE TABLE `TIPO_COMPROBANTE` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `descripcion` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+INSERT INTO `TIPO_USUARIO` (`id`, `descripcion`) VALUES ('1', 'Cliente');
+INSERT INTO `TIPO_USUARIO` (`id`, `descripcion`) VALUES ('2', 'Proveedor');
+
+INSERT INTO `TIPO_COMPROBANTE` (`id`, `descripcion`) VALUES ('1', 'Pedido');
+INSERT INTO `TIPO_COMPROBANTE` (`id`, `descripcion`) VALUES ('2', 'Cuenta Corriente');
+INSERT INTO `TIPO_COMPROBANTE` (`id`, `descripcion`) VALUES ('3', 'Orden de Compra');
+INSERT INTO `TIPO_COMPROBANTE` (`id`, `descripcion`) VALUES ('4', 'Orden de Venta');
+INSERT INTO `TIPO_COMPROBANTE` (`id`, `descripcion`) VALUES ('5', 'Nota de Credito');

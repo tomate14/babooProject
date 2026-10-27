@@ -41,17 +41,17 @@ services:
      - baboo-java
     networks:
       - mynet
-  #backup:
-  #  build:
-  #    context: C:\Users\Maxi\Desktop\casalinda\buckup
-  #    dockerfile: Dockerfile
-  #  container_name: backup_mongodb
-  #  volumes:
-  #    - C:\casalinda\buckup\data:/backup
-  #  depends_on:
-  #    - mongodb
-  #  networks:
-  #    - mynet
+  backup:
+    build:
+      context: C:\Users\Maxi\Desktop\babooProject\backup
+      dockerfile: Dockerfile
+    container_name: backup_mysql_container
+    volumes:
+      - C:\baboo\backup\data:/backup
+    depends_on:
+      - baboo-mysql
+    networks:
+      - mynet
 
 networks:
       mynet:

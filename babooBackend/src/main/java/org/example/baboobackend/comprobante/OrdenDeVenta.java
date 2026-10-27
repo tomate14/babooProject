@@ -1,10 +1,8 @@
 package org.example.baboobackend.comprobante;
 
-import org.example.baboobackend.comprobante.calculador.Calculador;
 import org.example.baboobackend.comprobante.calculador.Resta;
 import org.example.baboobackend.comprobante.calculador.Suma;
 import org.example.baboobackend.config.exceptions.StockException;
-import org.example.baboobackend.entities.Cliente;
 import org.example.baboobackend.entities.Pedido;
 import org.example.baboobackend.entities.Producto;
 import org.example.baboobackend.enumerados.Estado;
